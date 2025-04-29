@@ -1,0 +1,21 @@
+<!-- public/custom-ccp.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Custom CCP Loader</title>
+  <script src="https://connect-cdn.amazon.com/connect/ccp.js"></script>
+</head>
+<body>
+  <script>
+    connect.core.initCCP(window, {
+      ccpUrl: "https://eastghats-dev.awsapps.com/connect/ccp-v2/",
+      loginPopup: true,
+      region: "eu-west-2",
+      softphone: {
+        allowFramedSoftphone: true,
+      },
+    });
+  </script>
+</body>
+</html>

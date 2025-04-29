@@ -1,4 +1,3 @@
-// src/components/CCPContainer.js
 import React, { useEffect, useState } from "react";
 import 'amazon-connect-streams';
 
@@ -6,13 +5,13 @@ const CCPContainer = () => {
   const [contact, setContact] = useState(null);
   const [agent, setAgent] = useState(null);
 
-  const CONNECT_CCP_URL = process.env.REACT_APP_CONNECT_CCP_URL;
+  const LOCAL_CCP_URL = `${window.location.origin}/custom-ccp.html`;
   const GOOGLE_SSO_URL = "https://accounts.google.com/o/saml2/initsso?idpid=C00j5cpqj&spid=257792497971&forceauthn=false&authuser=0";
 
   useEffect(() => {
-    // Load hidden CCP iframe (will not render UI, just enable Streams SDK)
+    // Load iframe pointing to local custom CCP page
     window.connect.core.initCCP(document.getElementById("ccp-container"), {
-      ccpUrl: CONNECT_CCP_URL,
+      ccpUrl: LOCAL_CCP_URL,
       loginPopup: false,
       region: "eu-west-2",
       softphone: {
@@ -21,36 +20,22 @@ const CCPContainer = () => {
       },
     });
 
-    // Check login state
-    const checkLogin = setInterval(() => {
-      const agent = window.connect?.agentApp?.getAgent();
-      if (agent && agent.getState()) {
-        console.log("Agent logged in via SSO");
-        clearInterval(checkLogin);
-        setAgent(agent);
-      } else {
-        // Not logged in — force SSO
-        console.warn("Not authenticated — redirecting to SSO");
-        window.location.href = GOOGLE_SSO_URL;
-      }
-    }, 1000);
-
-    // Register contact listener
-    window.connect.contact((newContact) => {
-      console.log("New contact", newContact);
-      setContact(newContact);
-    });
-
+    // Register agent and contact listeners
     window.connect.agent((newAgent) => {
       console.log("Agent Info", newAgent);
       setAgent(newAgent);
+    });
+
+    window.connect.contact((newContact) => {
+      console.log("New contact", newContact);
+      setContact(newContact);
     });
   }, []);
 
   return (
     <div>
       <h2>Custom Amazon Connect CCP</h2>
-      <div id="ccp-container" style={{ display: "none" }} /> {/* Hidden iframe */}
+      <div id="ccp-container" style={{ display: "none" }} />
 
       {contact ? (
         <div>
