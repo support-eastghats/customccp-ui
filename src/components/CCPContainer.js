@@ -10,8 +10,9 @@ const CCPContainer = () => {
 
   useEffect(() => {
     window.connect.core.initCCP(document.getElementById("ccp-container"), {
-      ccpUrl: LOCAL_CCP_URL,
-      loginPopup: false,
+      ccpUrl: `${window.location.origin}/custom-ccp.html`,
+      loginPopup: true, // ← enables Google SSO popup
+      loginPopupAutoClose: true, // ← closes the popup once login finishes
       region: "eu-west-2",
       softphone: {
         allowFramedSoftphone: true,
