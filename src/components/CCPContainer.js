@@ -6,17 +6,36 @@ const CCPContainer = () => {
   const [contact, setContact] = useState(null);
   const [agent, setAgent] = useState(null);
 
+  const CONNECT_CCP_URL = process.env.REACT_APP_CONNECT_CCP_URL;
+  const GOOGLE_SSO_URL = "https://accounts.google.com/o/saml2/initsso?idpid=C00j5cpqj&spid=257792497971&forceauthn=false&authuser=0";
+
   useEffect(() => {
+    // Load hidden CCP iframe (will not render UI, just enable Streams SDK)
     window.connect.core.initCCP(document.getElementById("ccp-container"), {
-      ccpUrl: process.env.REACT_APP_CONNECT_CCP_URL, // No loginPopup, iframe only to initialize streams
-      region: "eu-west-2",
+      ccpUrl: CONNECT_CCP_URL,
       loginPopup: false,
+      region: "eu-west-2",
       softphone: {
         allowFramedSoftphone: true,
         disableRingtone: false,
       },
     });
 
+    // Check login state
+    const checkLogin = setInterval(() => {
+      const agent = window.connect?.agentApp?.getAgent();
+      if (agent && agent.getState()) {
+        console.log("Agent logged in via SSO");
+        clearInterval(checkLogin);
+        setAgent(agent);
+      } else {
+        // Not logged in — force SSO
+        console.warn("Not authenticated — redirecting to SSO");
+        window.location.href = GOOGLE_SSO_URL;
+      }
+    }, 1000);
+
+    // Register contact listener
     window.connect.contact((newContact) => {
       console.log("New contact", newContact);
       setContact(newContact);
@@ -28,60 +47,28 @@ const CCPContainer = () => {
     });
   }, []);
 
-  const acceptCall = () => {
-    if (contact) {
-      contact.accept();
-    }
-  };
-
-  const rejectCall = () => {
-    if (contact) {
-      contact.reject();
-    }
-  };
-
-  const endCall = () => {
-    if (contact) {
-      contact.destroy();
-    }
-  };
-
-  const muteCall = () => {
-    if (contact && contact.getInitialConnection()) {
-      contact.getInitialConnection().mute();
-    }
-  };
-
-  const unmuteCall = () => {
-    if (contact && contact.getInitialConnection()) {
-      contact.getInitialConnection().unmute();
-    }
-  };
-
   return (
     <div>
       <h2>Custom Amazon Connect CCP</h2>
-      <div id="ccp-container" style={{ display: "none" }} /> {/* Hide iframe */}
-      
+      <div id="ccp-container" style={{ display: "none" }} /> {/* Hidden iframe */}
+
       {contact ? (
         <div>
           <h3>Incoming Call</h3>
           <p>Caller ID: {contact.getAttributes()?.CallerId?.value || "Unknown"}</p>
-          <button onClick={acceptCall}>Accept</button>
-          <button onClick={rejectCall}>Reject</button>
-          <button onClick={endCall}>End</button>
-          <button onClick={muteCall}>Mute</button>
-          <button onClick={unmuteCall}>Unmute</button>
+          <button onClick={() => contact.accept()}>Accept</button>
+          <button onClick={() => contact.reject()}>Reject</button>
+          <button onClick={() => contact.destroy()}>End</button>
         </div>
       ) : (
-        <p>No incoming call</p>
+        <p>No active call</p>
       )}
 
-      {agent ? (
+      {agent && (
         <div>
-          <h4>Agent Status: {agent.getState().name}</h4>
+          <h4>Status: {agent.getState().name}</h4>
         </div>
-      ) : null}
+      )}
     </div>
   );
 };
