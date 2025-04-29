@@ -1,9 +1,13 @@
-import React from 'react';
+// src/App.js or wherever routes are handled
+import React from "react";
+import CCPContainer from "./components/CCPContainer";
 
-export default function App() {
+function App() {
   return (
-    <div style={{ padding: '2rem', fontFamily: 'Arial' }}>
-      <h1>Hello World Paithran</h1>
+    <div>
+      <CCPContainer />
     </div>
   );
 }
+
+export default App;
