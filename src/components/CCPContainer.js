@@ -9,7 +9,6 @@ const CCPContainer = () => {
   const GOOGLE_SSO_URL = "https://accounts.google.com/o/saml2/initsso?idpid=C00j5cpqj&spid=257792497971&forceauthn=false&authuser=0";
 
   useEffect(() => {
-    // Load iframe pointing to local custom CCP page
     window.connect.core.initCCP(document.getElementById("ccp-container"), {
       ccpUrl: LOCAL_CCP_URL,
       loginPopup: false,
@@ -20,7 +19,6 @@ const CCPContainer = () => {
       },
     });
 
-    // Register agent and contact listeners
     window.connect.agent((newAgent) => {
       console.log("Agent Info", newAgent);
       setAgent(newAgent);
