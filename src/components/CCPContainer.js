@@ -1,60 +1,60 @@
-import React, { useEffect, useState } from "react";
+// src/components/CCPContainer.js
+import { useEffect } from "react";
 import 'amazon-connect-streams';
 
-const CCPContainer = () => {
-  const [contact, setContact] = useState(null);
-  const [agent, setAgent] = useState(null);
-
-  const LOCAL_CCP_URL = `${window.location.origin}/custom-ccp.html`;
-  const GOOGLE_SSO_URL = "https://accounts.google.com/o/saml2/initsso?idpid=C00j5cpqj&spid=257792497971&forceauthn=false&authuser=0";
-
+export default function CCPContainer({ onAgentReady, onCcpError }) {
   useEffect(() => {
-    window.connect.core.initCCP(document.getElementById("ccp-container"), {
-      ccpUrl: `${window.location.origin}/custom-ccp.html`,
-      loginPopup: true, // ← enables Google SSO popup
-      loginPopupAutoClose: true, // ← closes the popup once login finishes
-      region: "eu-west-2",
-      softphone: {
-        allowFramedSoftphone: true,
-        disableRingtone: false,
-      },
-    });
+    const ccpUrl = process.env.REACT_APP_CCP_URL || `${window.location.origin}/custom-ccp.html`;
+    const region = process.env.REACT_APP_REGION || "eu-west-2";
 
-    window.connect.agent((newAgent) => {
-      console.log("Agent Info", newAgent);
-      setAgent(newAgent);
-    });
+    console.log("🟡 CCP Init Attempt");
+    console.log("🔗 CCP URL:", ccpUrl);
+    console.log("🌍 Region:", region);
 
-    window.connect.contact((newContact) => {
-      console.log("New contact", newContact);
-      setContact(newContact);
-    });
-  }, []);
+    setTimeout(() => {
+      try {
+        if (!window.connect || !window.connect.core) {
+          const errMsg = "❌ Amazon Connect SDK not loaded (npm import failed)";
+          console.error(errMsg);
+          onCcpError?.(errMsg);
+          return;
+        }
 
-  return (
-    <div>
-      <h2>Custom Amazon Connect CCP</h2>
-      <div id="ccp-container" style={{ display: "none" }} />
+        const container = document.getElementById("ccp-container");
+        if (!container) {
+          const errMsg = "❌ CCP container element not found in DOM";
+          console.error(errMsg);
+          onCcpError?.(errMsg);
+          return;
+        }
 
-      {contact ? (
-        <div>
-          <h3>Incoming Call</h3>
-          <p>Caller ID: {contact.getAttributes()?.CallerId?.value || "Unknown"}</p>
-          <button onClick={() => contact.accept()}>Accept</button>
-          <button onClick={() => contact.reject()}>Reject</button>
-          <button onClick={() => contact.destroy()}>End</button>
-        </div>
-      ) : (
-        <p>No active call</p>
-      )}
+        window.connect.core.initCCP(container, {
+          ccpUrl,
+          region,
+          loginPopup: true,
+          loginPopupAutoClose: true,
+          softphone: {
+            allowFramedSoftphone: true,
+            disableRingtone: false,
+          },
+        });
 
-      {agent && (
-        <div>
-          <h4>Status: {agent.getState().name}</h4>
-        </div>
-      )}
-    </div>
-  );
-};
+        window.connect.agent((agent) => {
+          console.log("✅ Agent connected");
+          const info = {
+            name: agent.getName(),
+            username: agent.getUsername(),
+            routingProfile: agent.getRoutingProfile().name,
+            userId: agent.getConfiguration().agentId,
+          };
+          onAgentReady?.(info);
+        });
+      } catch (error) {
+        console.error("❌ CCP init failed:", error);
+        onCcpError?.(error.message || "Unknown CCP error");
+      }
+    }, 500);
+  }, [onAgentReady, onCcpError]);
 
-export default CCPContainer;
+  return <div id="ccp-container" style={{ height: "500px", width: "100%" }} />;
+}
