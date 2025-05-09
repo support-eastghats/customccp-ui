@@ -66,7 +66,6 @@ export default function CCPContainer() {
     return () => {
       script.remove();
     };
-    
   }, []);
 
   const sendPauseResumeRecords = async () => {
@@ -77,13 +76,10 @@ export default function CCPContainer() {
         await axios.put(
           `${process.env.REACT_APP_DISPURL}/setpauseresumeattr`,
           {
-            body: JSON.stringify({
-              pauseCtrData: pauseTimestamps.join(", "),
-              resumeCtrData: resumeTimestamps.join(", "),
-              contactId,
-              instanceId
-            }),
-            headers: {}
+            pauseCtrData: pauseTimestamps.join(", "),
+            resumeCtrData: resumeTimestamps.join(", "),
+            contactId,
+            instanceId
           },
           {
             headers: {
@@ -115,7 +111,7 @@ export default function CCPContainer() {
     try {
       await axios.post(
         `${process.env.REACT_APP_DISPURL}/setpause`,
-        { body: JSON.stringify({ contactId, instanceId }) },
+        { contactId, instanceId },
         {
           headers: {
             "Content-Type": "application/json",
@@ -140,7 +136,7 @@ export default function CCPContainer() {
     try {
       await axios.post(
         `${process.env.REACT_APP_DISPURL}/setresume`,
-        { body: JSON.stringify({ contactId, instanceId }) },
+        { contactId, instanceId },
         {
           headers: {
             "Content-Type": "application/json",
