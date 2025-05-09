@@ -1,60 +1,41 @@
-// src/components/CCPContainer.js
 import { useEffect } from "react";
-import 'amazon-connect-streams';
 
-export default function CCPContainer({ onAgentReady, onCcpError }) {
+let initialized = false;
+
+export default function CCPContainer() {
   useEffect(() => {
-    const ccpUrl = process.env.REACT_APP_CCP_URL || `${window.location.origin}/custom-ccp.html`;
-    const region = process.env.REACT_APP_REGION || "eu-west-2";
+    if (initialized) return;
+    initialized = true;
 
-    console.log("🟡 CCP Init Attempt");
-    console.log("🔗 CCP URL:", ccpUrl);
-    console.log("🌍 Region:", region);
+    const script = document.createElement("script");
+    script.src = "/connect-streams-min.js";
+    script.async = true;
 
-    setTimeout(() => {
-      try {
-        if (!window.connect || !window.connect.core) {
-          const errMsg = "❌ Amazon Connect SDK not loaded (npm import failed)";
-          console.error(errMsg);
-          onCcpError?.(errMsg);
-          return;
-        }
-
-        const container = document.getElementById("ccp-container");
-        if (!container) {
-          const errMsg = "❌ CCP container element not found in DOM";
-          console.error(errMsg);
-          onCcpError?.(errMsg);
-          return;
-        }
-
-        window.connect.core.initCCP(container, {
-          ccpUrl,
-          region,
+    script.onload = () => {
+      if (window.connect && window.connect.core) {
+        window.connect.core.initCCP(document.getElementById("ccp-container"), {
+          ccpUrl: "https://eastghats-dev.my.connect.aws/ccp-v2/",
           loginPopup: true,
+          loginUrl: "https://accounts.google.com/o/saml2/initsso?idpid=C00j5cpqj&spid=257792497971&forceauthn=false",
           loginPopupAutoClose: true,
+          region: "eu-west-2",
           softphone: {
-            allowFramedSoftphone: true,
-            disableRingtone: false,
-          },
+            allowFramedSoftphone: true
+          }
         });
-
-        window.connect.agent((agent) => {
-          console.log("✅ Agent connected");
-          const info = {
-            name: agent.getName(),
-            username: agent.getUsername(),
-            routingProfile: agent.getRoutingProfile().name,
-            userId: agent.getConfiguration().agentId,
-          };
-          onAgentReady?.(info);
-        });
-      } catch (error) {
-        console.error("❌ CCP init failed:", error);
-        onCcpError?.(error.message || "Unknown CCP error");
+      } else {
+        console.error("Amazon Connect not available.");
       }
-    }, 500);
-  }, [onAgentReady, onCcpError]);
+    };
 
-  return <div id="ccp-container" style={{ height: "500px", width: "100%" }} />;
+    document.body.appendChild(script);
+  }, []);
+
+
+  return (
+    <div>
+      <h2>Amazon Connect CCP</h2>
+      <div id="ccp-container" style={{ width: "400px", height: "600px", border: "1px solid #ccc" }}></div>
+    </div>
+  );
 }
