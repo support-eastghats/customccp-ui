@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 
@@ -65,6 +66,7 @@ export default function CCPContainer() {
     return () => {
       script.remove();
     };
+    
   }, []);
 
   const sendPauseResumeRecords = async () => {
