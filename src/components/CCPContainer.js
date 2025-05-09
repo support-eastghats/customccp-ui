@@ -14,11 +14,11 @@ export default function CCPContainer() {
     script.onload = () => {
       if (window.connect && window.connect.core) {
         window.connect.core.initCCP(document.getElementById("ccp-container"), {
-          ccpUrl: "https://eastghats-dev.my.connect.aws/ccp-v2/",
+          ccpUrl: process.env.REACT_APP_CCPURL,
           loginPopup: true,
-          loginUrl: "https://accounts.google.com/o/saml2/initsso?idpid=C00j5cpqj&spid=257792497971&forceauthn=false",
+          loginUrl: process.env.REACT_APP_LOGINURL,
           loginPopupAutoClose: true,
-          region: "eu-west-2",
+          region: process.env.REACT_APP_REGION,
           softphone: {
             allowFramedSoftphone: true
           }
