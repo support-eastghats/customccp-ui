@@ -13,6 +13,8 @@ export default function CCPContainer() {
   const [resumeTimestamps, setResumeTimestamps] = useState([]);
   const [apiKey, setApiKey] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const script = document.createElement("script");
@@ -31,9 +33,7 @@ export default function CCPContainer() {
           pageOptions: { enableAudioDeviceSettings: true }
         });
 
-        window.connect.agent(agent => {
-          setAgent(agent);
-        });
+        window.connect.agent(agent => setAgent(agent));
 
         window.connect.contact(contact => {
           setContact(contact);
@@ -53,6 +53,7 @@ export default function CCPContainer() {
             setIsDisabled(false);
             setIsResumeDisabled(true);
             setErrorMessage("");
+            setSuccessMessage("");
           });
 
           contact.onEnded(() => {
@@ -68,6 +69,11 @@ export default function CCPContainer() {
       script.remove();
     };
   }, []);
+
+  const getInstanceId = () => {
+    const arn = agent?.getRoutingProfile()?.routingProfileARN;
+    return arn?.split("/")[1] || process.env.REACT_APP_CONNECT_INSTANCE_ID;
+  };
 
   const sendPauseResumeRecords = async () => {
     const instanceId = getInstanceId();
@@ -95,20 +101,18 @@ export default function CCPContainer() {
     }
   };
 
-  const getInstanceId = () => {
-    const arn = agent?.getRoutingProfile()?.routingProfileARN;
-    return arn?.split("/")[1] || process.env.REACT_APP_CONNECT_INSTANCE_ID;
-  };
-
   const handlePause = async () => {
+    setLoading(true);
+    setErrorMessage("");
+    setSuccessMessage("");
     setIsDisabled(true);
     setIsResumeDisabled(false);
-    setErrorMessage("");
 
     const contactId = contact?.getContactId();
     const instanceId = getInstanceId();
     if (!contactId || !instanceId) {
       setErrorMessage("Missing contactId or instanceId");
+      setLoading(false);
       return;
     }
 
@@ -118,7 +122,7 @@ export default function CCPContainer() {
     try {
       const response = await axios.post(
         `${process.env.REACT_APP_DISPURL}/setpause`,
-        { contactId, instanceId, ensureStarted: true },
+        { contactId, instanceId },
         {
           headers: {
             "Content-Type": "application/json",
@@ -127,22 +131,28 @@ export default function CCPContainer() {
         }
       );
       console.log("Pause success:", response.data);
+      setSuccessMessage("Recording paused successfully.");
     } catch (error) {
       const reason = error?.response?.data?.details || error.message;
       setErrorMessage(`Pause failed: ${reason}`);
       console.error("Pause error:", reason);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleResume = async () => {
+    setLoading(true);
+    setErrorMessage("");
+    setSuccessMessage("");
     setIsDisabled(false);
     setIsResumeDisabled(true);
-    setErrorMessage("");
 
     const contactId = contact?.getContactId();
     const instanceId = getInstanceId();
     if (!contactId || !instanceId) {
       setErrorMessage("Missing contactId or instanceId");
+      setLoading(false);
       return;
     }
 
@@ -161,10 +171,13 @@ export default function CCPContainer() {
         }
       );
       console.log("Resume success:", response.data);
+      setSuccessMessage("Recording resumed successfully.");
     } catch (error) {
       const reason = error?.response?.data?.details || error.message;
       setErrorMessage(`Resume failed: ${reason}`);
       console.error("Resume error:", reason);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -175,20 +188,22 @@ export default function CCPContainer() {
     setResumeTimestamps([]);
     setMainDisplay("");
     setErrorMessage("");
+    setSuccessMessage("");
   };
 
   return (
     <div>
       <h2>Amazon Connect CCP</h2>
       <div>
-        <button onClick={handlePause} disabled={isDisabled}>
-          Pause Recording
+        <button onClick={handlePause} disabled={isDisabled || loading}>
+          {loading && isDisabled ? "Pausing..." : "Pause Recording"}
         </button>
-        <button onClick={handleResume} disabled={isResumeDisabled}>
-          Resume Recording
+        <button onClick={handleResume} disabled={isResumeDisabled || loading}>
+          {loading && isResumeDisabled ? "Resuming..." : "Resume Recording"}
         </button>
         <input value={mainDisplay} readOnly />
         {errorMessage && <p style={{ color: "red", marginTop: "8px" }}>{errorMessage}</p>}
+        {successMessage && <p style={{ color: "green", marginTop: "8px" }}>{successMessage}</p>}
       </div>
       <div
         id="ccp-container"
