@@ -12,6 +12,7 @@ export default function CCPContainer() {
   const [pauseTimestamps, setPauseTimestamps] = useState([]);
   const [resumeTimestamps, setResumeTimestamps] = useState([]);
   const [apiKey, setApiKey] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
     const script = document.createElement("script");
@@ -51,6 +52,7 @@ export default function CCPContainer() {
 
             setIsDisabled(false);
             setIsResumeDisabled(true);
+            setErrorMessage("");
           });
 
           contact.onEnded(() => {
@@ -62,7 +64,6 @@ export default function CCPContainer() {
     };
 
     document.body.appendChild(script);
-
     return () => {
       script.remove();
     };
@@ -102,18 +103,22 @@ export default function CCPContainer() {
   const handlePause = async () => {
     setIsDisabled(true);
     setIsResumeDisabled(false);
+    setErrorMessage("");
 
     const contactId = contact?.getContactId();
     const instanceId = getInstanceId();
-    if (!contactId || !instanceId) return;
+    if (!contactId || !instanceId) {
+      setErrorMessage("Missing contactId or instanceId");
+      return;
+    }
 
     const now = new Date().toISOString();
     setPauseTimestamps(prev => [...prev, `Pause ${now}`]);
 
     try {
-      await axios.post(
+      const response = await axios.post(
         `${process.env.REACT_APP_DISPURL}/setpause`,
-        { contactId, instanceId },
+        { contactId, instanceId, ensureStarted: true },
         {
           headers: {
             "Content-Type": "application/json",
@@ -121,24 +126,31 @@ export default function CCPContainer() {
           }
         }
       );
+      console.log("Pause success:", response.data);
     } catch (error) {
-      console.error("Pause error:", error);
+      const reason = error?.response?.data?.details || error.message;
+      setErrorMessage(`Pause failed: ${reason}`);
+      console.error("Pause error:", reason);
     }
   };
 
   const handleResume = async () => {
     setIsDisabled(false);
     setIsResumeDisabled(true);
+    setErrorMessage("");
 
     const contactId = contact?.getContactId();
     const instanceId = getInstanceId();
-    if (!contactId || !instanceId) return;
+    if (!contactId || !instanceId) {
+      setErrorMessage("Missing contactId or instanceId");
+      return;
+    }
 
     const now = new Date().toISOString();
     setResumeTimestamps(prev => [...prev, `Resume ${now}`]);
 
     try {
-      await axios.post(
+      const response = await axios.post(
         `${process.env.REACT_APP_DISPURL}/setresume`,
         { contactId, instanceId },
         {
@@ -148,8 +160,11 @@ export default function CCPContainer() {
           }
         }
       );
+      console.log("Resume success:", response.data);
     } catch (error) {
-      console.error("Resume error:", error);
+      const reason = error?.response?.data?.details || error.message;
+      setErrorMessage(`Resume failed: ${reason}`);
+      console.error("Resume error:", reason);
     }
   };
 
@@ -159,6 +174,7 @@ export default function CCPContainer() {
     setPauseTimestamps([]);
     setResumeTimestamps([]);
     setMainDisplay("");
+    setErrorMessage("");
   };
 
   return (
@@ -172,6 +188,7 @@ export default function CCPContainer() {
           Resume Recording
         </button>
         <input value={mainDisplay} readOnly />
+        {errorMessage && <p style={{ color: "red", marginTop: "8px" }}>{errorMessage}</p>}
       </div>
       <div
         id="ccp-container"
