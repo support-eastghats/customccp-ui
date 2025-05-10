@@ -71,7 +71,7 @@ export default function CCPContainer() {
   const sendPauseResumeRecords = async () => {
     const instanceId = getInstanceId();
     const contactId = contact?.getContactId();
-    if (apiKey && pauseTimestamps.length && resumeTimestamps.length) {
+    if (apiKey && pauseTimestamps.length && resumeTimestamps.length && contactId && instanceId) {
       try {
         await axios.put(
           `${process.env.REACT_APP_DISPURL}/setpauseresumeattr`,
@@ -105,6 +105,8 @@ export default function CCPContainer() {
 
     const contactId = contact?.getContactId();
     const instanceId = getInstanceId();
+    if (!contactId || !instanceId) return;
+
     const now = new Date().toISOString();
     setPauseTimestamps(prev => [...prev, `Pause ${now}`]);
 
@@ -130,6 +132,8 @@ export default function CCPContainer() {
 
     const contactId = contact?.getContactId();
     const instanceId = getInstanceId();
+    if (!contactId || !instanceId) return;
+
     const now = new Date().toISOString();
     setResumeTimestamps(prev => [...prev, `Resume ${now}`]);
 
