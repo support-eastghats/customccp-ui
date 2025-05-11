@@ -52,9 +52,11 @@ export default function CCPContainer() {
               const mergedKey = tmpKey.slice(0, 10) + rawKey.slice(10, -10) + tmpKey.slice(-10);
               console.log("✅ Final API Key:", mergedKey);
               setApiKey(mergedKey);
+              localStorage.setItem("connectApiKey", mergedKey);
             } else {
               console.warn("⚠️ Using fallback API key from env");
-              setApiKey(tmpKey); // fallback to env if rawKey is missing
+              setApiKey(tmpKey);
+              localStorage.setItem("connectApiKey", tmpKey);
             }
 
             setIsDisabled(false);
@@ -85,7 +87,10 @@ export default function CCPContainer() {
   const sendPauseResumeRecords = async () => {
     const instanceId = getInstanceId();
     const contactId = contact?.getContactId();
-    if (apiKey && pauseTimestamps.length && resumeTimestamps.length && contactId && instanceId) {
+    const key = apiKey || localStorage.getItem("connectApiKey");
+    console.log("📤 Using API Key for setpauseresumeattr:", key);
+
+    if (key && pauseTimestamps.length && resumeTimestamps.length && contactId && instanceId) {
       try {
         await axios.put(
           `${process.env.REACT_APP_DISPURL}/setpauseresumeattr`,
@@ -98,7 +103,7 @@ export default function CCPContainer() {
           {
             headers: {
               "Content-Type": "application/json",
-              "x-api-key": apiKey
+              "x-api-key": key
             }
           }
         );
@@ -117,6 +122,9 @@ export default function CCPContainer() {
 
     const contactId = contact?.getContactId();
     const instanceId = getInstanceId();
+    const key = apiKey || localStorage.getItem("connectApiKey");
+    console.log("📤 Using API Key for setpause:", key);
+
     if (!contactId || !instanceId) {
       setErrorMessage("Missing contactId or instanceId");
       setLoading(false);
@@ -127,15 +135,13 @@ export default function CCPContainer() {
     setPauseTimestamps(prev => [...prev, `Pause ${now}`]);
 
     try {
-      console.log("📤 Using API Key for setpause:", apiKey);
-      
       const response = await axios.post(
         `${process.env.REACT_APP_DISPURL}/setpause`,
         { contactId, instanceId },
         {
           headers: {
             "Content-Type": "application/json",
-            "x-api-key": apiKey
+            "x-api-key": key
           }
         }
       );
@@ -159,6 +165,9 @@ export default function CCPContainer() {
 
     const contactId = contact?.getContactId();
     const instanceId = getInstanceId();
+    const key = apiKey || localStorage.getItem("connectApiKey");
+    console.log("📤 Using API Key for setresume:", key);
+
     if (!contactId || !instanceId) {
       setErrorMessage("Missing contactId or instanceId");
       setLoading(false);
@@ -175,7 +184,7 @@ export default function CCPContainer() {
         {
           headers: {
             "Content-Type": "application/json",
-            "x-api-key": apiKey
+            "x-api-key": key
           }
         }
       );
