@@ -45,9 +45,16 @@ export default function CCPContainer() {
 
             const rawKey = attr?.ccpApiKey?.value;
             const tmpKey = process.env.REACT_APP_APIKEY;
+            console.log("🔑 Raw Key from contact attributes:", rawKey);
+            console.log("🔑 TMP Key from env:", tmpKey);
+
             if (rawKey && tmpKey && tmpKey.length === 20) {
               const mergedKey = tmpKey.slice(0, 10) + rawKey.slice(10, -10) + tmpKey.slice(-10);
+              console.log("✅ Final API Key:", mergedKey);
               setApiKey(mergedKey);
+            } else {
+              console.warn("⚠️ Using fallback API key from env");
+              setApiKey(tmpKey); // fallback to env if rawKey is missing
             }
 
             setIsDisabled(false);
@@ -120,6 +127,8 @@ export default function CCPContainer() {
     setPauseTimestamps(prev => [...prev, `Pause ${now}`]);
 
     try {
+      console.log("📤 Using API Key for setpause:", apiKey);
+      
       const response = await axios.post(
         `${process.env.REACT_APP_DISPURL}/setpause`,
         { contactId, instanceId },
