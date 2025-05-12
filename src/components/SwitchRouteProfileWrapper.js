@@ -7,6 +7,7 @@ export default function SwitchRouteProfileWrapper({ agent, apiKey }) {
     return (
       <div className="profile-wrapper">
         <p style={{ color: "orange" }}>⏳ Detecting agent info...</p>
+        <div className="spinner" />
       </div>
     );
   }

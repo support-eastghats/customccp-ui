@@ -1,5 +1,5 @@
 // src/App.js
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import CCPContainer from "./components/CCPContainer";
 import SwitchRouteProfileWrapper from "./components/SwitchRouteProfileWrapper";
 import "./App.css";
@@ -8,6 +8,12 @@ function App() {
   const [darkMode, setDarkMode] = useState(false);
   const [agent, setAgent] = useState(null);
   const [apiKey, setApiKey] = useState("");
+
+  useEffect(() => {
+    if (agent) {
+      console.log("✅ Agent set in App:", agent.getName());
+    }
+  }, [agent]);
 
   return (
     <div className={`App ${darkMode ? "dark" : ""}`}>
@@ -22,9 +28,12 @@ function App() {
         <div className="card">
           <CCPContainer setAgent={setAgent} setApiKey={setApiKey} />
         </div>
-        <div className="card">
-          <SwitchRouteProfileWrapper agent={agent} apiKey={apiKey} />
-        </div>
+
+        {agent && apiKey && (
+          <div className="card">
+            <SwitchRouteProfileWrapper agent={agent} apiKey={apiKey} />
+          </div>
+        )}
       </div>
     </div>
   );

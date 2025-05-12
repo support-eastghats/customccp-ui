@@ -1,3 +1,4 @@
+// src/components/SwitchRouteProfileSection.js
 import { useState, useEffect } from 'react';
 import axios from 'axios';
 import './SwitchRouteProfileSection.css';
@@ -13,17 +14,30 @@ export default function SwitchRouteProfileSection({ agent, apiKey }) {
   const instanceId = process.env.REACT_APP_CONNECT_INSTANCE_ID;
   const apiBase = process.env.REACT_APP_DISPURL;
 
-  // ✅ Load profile only when agent is fully initialized
   useEffect(() => {
-    if (!agent?.getUsername) return;
-    fetchRoutingProfiles();
+    let retryInterval;
+
+    const tryFetchProfiles = () => {
+      if (agent?.getUsername) {
+        console.log("📤 Fetching routing profiles for:", agent.getUsername());
+        fetchRoutingProfiles();
+        clearInterval(retryInterval);
+      }
+    };
+
+    if (agent?.getUsername) {
+      fetchRoutingProfiles();
+    } else {
+      console.warn("⏳ Agent not ready, retrying...");
+      retryInterval = setInterval(tryFetchProfiles, 1000);
+    }
+
+    return () => clearInterval(retryInterval);
   }, [agent]);
 
   const fetchRoutingProfiles = async () => {
     try {
       const userId = agent.getUsername();
-      console.log("📤 Fetching routing profiles for user:", userId);
-
       const res = await axios.post(
         `${apiBase}/getAvailableRoutingProfiles`,
         { userId, instanceId },
@@ -55,7 +69,7 @@ export default function SwitchRouteProfileSection({ agent, apiKey }) {
     };
 
     try {
-      const res = await axios.post(`${apiBase}/switchRoutingProfile`, payload, {
+      await axios.post(`${apiBase}/switchRoutingProfile`, payload, {
         headers: {
           'Content-Type': 'application/json',
           'x-api-key': apiKey
@@ -81,10 +95,13 @@ export default function SwitchRouteProfileSection({ agent, apiKey }) {
         <div className="switch-form">
           <p><strong>Current Profile:</strong> {currentProfile || 'Loading...'}</p>
 
+          {loading && <div className="spinner" />}
+
           <select
             className="switch-dropdown"
             value={selectedProfileId}
             onChange={(e) => setSelectedProfileId(e.target.value)}
+            disabled={loading}
           >
             <option value="">-- Select Routing Profile --</option>
             {availableProfiles.map((profile) => (
