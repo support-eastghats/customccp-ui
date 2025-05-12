@@ -5,7 +5,8 @@ import "./CCPContainer.css";
 export default function CCPContainer() {
   const containerRef = useRef(null);
   const [agent, setAgent] = useState(null);
-  const [agentName, setAgentName] = useState(""); // 👤 New
+  const [agentName, setAgentName] = useState("");
+  const [agentRoutingProfile, setAgentRoutingProfile] = useState("");
   const [contact, setContact] = useState(null);
   const [mainDisplay, setMainDisplay] = useState("");
   const [isDisabled, setIsDisabled] = useState(true);
@@ -40,6 +41,9 @@ export default function CCPContainer() {
 
           const name = agent.getName?.() || agent.getUsername?.() || "Unknown Agent";
           setAgentName(name);
+
+          const profile = agent.getRoutingProfile?.()?.name || "";
+          setAgentRoutingProfile(profile);
         });
 
         window.connect.contact(contact => {
@@ -202,9 +206,10 @@ export default function CCPContainer() {
     <div className="ccp-container">
       {agentName && (
         <div className="agent-info">
-          👤 Logged in as: <strong>{agentName}</strong>
+          👤 <strong>{agentName}</strong> | 📌 Routing Profile: <strong>{agentRoutingProfile}</strong>
         </div>
       )}
+
       <div className="ccp-buttons">
         <button onClick={handlePause} disabled={isDisabled || loading}>
           {loading && isDisabled ? "Pausing..." : "Pause Recording"}
@@ -213,9 +218,11 @@ export default function CCPContainer() {
           {loading && isResumeDisabled ? "Resuming..." : "Resume Recording"}
         </button>
       </div>
+
       <input value={mainDisplay} readOnly className="queue-display" />
       {errorMessage && <p className="error-msg">{errorMessage}</p>}
       {successMessage && <p className="success-msg">{successMessage}</p>}
+
       <div id="ccp-container" ref={containerRef} className="softphone-frame" />
     </div>
   );
