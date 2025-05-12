@@ -1,11 +1,18 @@
 // src/App.js
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import CCPContainer from "./components/CCPContainer";
 import SwitchRouteProfileWrapper from "./components/SwitchRouteProfileWrapper";
 import "./App.css";
 
 function App() {
+  const [agent, setAgent] = useState(null);
+  const [apiKey, setApiKey] = useState("");
   const [darkMode, setDarkMode] = useState(false);
+
+  useEffect(() => {
+    const storedKey = localStorage.getItem("connectApiKey");
+    if (storedKey) setApiKey(storedKey);
+  }, []);
 
   return (
     <div className={`App ${darkMode ? "dark" : ""}`}>
@@ -18,10 +25,10 @@ function App() {
 
       <div className="app-container">
         <div className="card">
-          <CCPContainer />
+          <CCPContainer setAgent={setAgent} setApiKey={setApiKey} />
         </div>
         <div className="card">
-          <SwitchRouteProfileWrapper />
+          <SwitchRouteProfileWrapper agent={agent} apiKey={apiKey} />
         </div>
       </div>
     </div>

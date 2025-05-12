@@ -1,18 +1,15 @@
-/* src/components/CCPContainer.js */
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import "./CCPContainer.css";
 
-export default function CCPContainer() {
+export default function CCPContainer({ setAgent, setApiKey }) {
   const containerRef = useRef(null);
-  const [agent, setAgent] = useState(null);
   const [contact, setContact] = useState(null);
   const [mainDisplay, setMainDisplay] = useState("");
   const [isDisabled, setIsDisabled] = useState(true);
   const [isResumeDisabled, setIsResumeDisabled] = useState(true);
   const [pauseTimestamps, setPauseTimestamps] = useState([]);
   const [resumeTimestamps, setResumeTimestamps] = useState([]);
-  const [apiKey, setApiKey] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -23,7 +20,7 @@ export default function CCPContainer() {
     script.async = true;
 
     script.onload = () => {
-      if (window.connect && window.connect.core) {
+      if (window.connect?.core) {
         window.connect.core.initCCP(containerRef.current, {
           ccpUrl: process.env.REACT_APP_CCPURL,
           loginPopup: true,
@@ -34,9 +31,15 @@ export default function CCPContainer() {
           pageOptions: { enableAudioDeviceSettings: true }
         });
 
-        window.connect.agent(agent => setAgent(agent));
+        const pollAgent = setInterval(() => {
+          const ccpAgent = window.connect.agent?.();
+          if (ccpAgent) {
+            setAgent(ccpAgent);
+            clearInterval(pollAgent);
+          }
+        }, 1000);
 
-        window.connect.contact(contact => {
+        window.connect.contact((contact) => {
           setContact(contact);
 
           contact.onConnected(() => {
@@ -74,17 +77,17 @@ export default function CCPContainer() {
     return () => {
       script.remove();
     };
-  }, []);
+  }, [setAgent, setApiKey]);
 
   const getInstanceId = () => {
-    const arn = agent?.getRoutingProfile()?.routingProfileARN;
+    const arn = window.connect.agent?.()?.getRoutingProfile()?.routingProfileARN;
     return arn?.split("/")[1] || process.env.REACT_APP_CONNECT_INSTANCE_ID;
   };
 
   const sendPauseResumeRecords = async () => {
     const instanceId = getInstanceId();
     const contactId = contact?.getContactId();
-    const key = apiKey || localStorage.getItem("connectApiKey");
+    const key = localStorage.getItem("connectApiKey");
 
     if (key && pauseTimestamps.length && resumeTimestamps.length && contactId && instanceId) {
       try {
@@ -118,7 +121,7 @@ export default function CCPContainer() {
 
     const contactId = contact?.getContactId();
     const instanceId = getInstanceId();
-    const key = apiKey || localStorage.getItem("connectApiKey");
+    const key = localStorage.getItem("connectApiKey");
 
     if (!contactId || !instanceId) {
       setErrorMessage("Missing contactId or instanceId");
@@ -158,7 +161,7 @@ export default function CCPContainer() {
 
     const contactId = contact?.getContactId();
     const instanceId = getInstanceId();
-    const key = apiKey || localStorage.getItem("connectApiKey");
+    const key = localStorage.getItem("connectApiKey");
 
     if (!contactId || !instanceId) {
       setErrorMessage("Missing contactId or instanceId");

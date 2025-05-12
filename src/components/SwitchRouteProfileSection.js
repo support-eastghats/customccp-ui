@@ -16,6 +16,8 @@ export default function SwitchRouteProfileSection({ agent, apiKey }) {
   const fetchRoutingProfiles = async () => {
     try {
       const userId = agent?.getUsername();
+      console.log("📤 Fetching routing profiles for user:", userId);
+  
       const res = await axios.post(
         `${apiBase}/getAvailableRoutingProfiles`,
         { userId, instanceId },
@@ -26,43 +28,49 @@ export default function SwitchRouteProfileSection({ agent, apiKey }) {
           }
         }
       );
+  
+      console.log("✅ Received routing profile response:", res.data);
+  
       setCurrentProfile(res.data.currentProfile);
       setAvailableProfiles(res.data.allowedProfiles);
     } catch (err) {
-      console.error('Error fetching route profiles:', err);
-      setMessage('❌ Failed to load profiles');
+      console.error('❌ Error fetching route profiles:', err);
+      setMessage('Failed to load profiles');
     }
   };
 
   const handleSwitch = async () => {
     if (!selectedProfileId) return;
+  
     setLoading(true);
     setMessage('');
-
+  
+    const payload = {
+      userId: agent?.getUsername(),
+      instanceId,
+      routingProfileId: selectedProfileId
+    };
+  
+    console.log("📤 Sending switchRoutingProfile payload:", payload);
+  
     try {
-      await axios.post(
-        `${apiBase}/switchRoutingProfile`,
-        {
-          userId: agent?.getUsername(),
-          instanceId,
-          routingProfileId: selectedProfileId
-        },
-        {
-          headers: {
-            'Content-Type': 'application/json',
-            'x-api-key': apiKey
-          }
+      const res = await axios.post(`${apiBase}/switchRoutingProfile`, payload, {
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': apiKey
         }
-      );
+      });
+  
+      console.log("✅ Routing profile switched response:", res.data);
       setMessage('✅ Routing profile switched successfully!');
     } catch (err) {
-      console.error('Switch failed:', err);
+      console.error('❌ Switch failed:', err.response?.data || err.message);
       setMessage('❌ Failed to switch routing profile');
     } finally {
       setLoading(false);
     }
   };
-
+  
   const toggleForm = () => {
     if (!showForm) fetchRoutingProfiles();
     setShowForm(!showForm);
