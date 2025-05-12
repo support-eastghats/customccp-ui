@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import "./CCPContainer.css";
@@ -34,9 +33,17 @@ export default function CCPContainer({ setAgent, setApiKey }) {
         });
 
         window.connect.agent(agent => {
+          // ✅ Set agent and API key immediately
           setAgent(agent);
           setAgentName(agent.getName());
           window.ccpAgent = agent;
+
+          const finalKey = process.env.REACT_APP_APIKEY;
+          setApiKey(finalKey);
+          localStorage.setItem("connectApiKey", finalKey);
+
+          console.log("✅ Agent initialized:", agent.getName());
+          console.log("🔐 API Key set from .env:", finalKey);
 
           window.connect.contact(contact => {
             setContact(contact);
@@ -46,13 +53,7 @@ export default function CCPContainer({ setAgent, setApiKey }) {
               const queue = contact.getQueue();
               setMainDisplay(queue?.name || "");
 
-              const finalKey = process.env.REACT_APP_APIKEY;
-
-              setApiKey(finalKey);
-              localStorage.setItem("connectApiKey", finalKey);
-
-              console.log("🧩 Contact Attributes:", attr);
-              console.log("🔒 Final API Key to be set (from .env):", finalKey);
+              console.log("📞 Contact connected. Attributes:", attr);
 
               setIsDisabled(false);
               setIsResumeDisabled(true);
