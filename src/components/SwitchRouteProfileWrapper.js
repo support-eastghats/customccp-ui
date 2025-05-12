@@ -1,3 +1,4 @@
+// SwitchRouteProfileWrapper.js
 import { useEffect, useState } from "react";
 import SwitchRouteProfile from "./switchRouteProfile";
 
@@ -6,20 +7,20 @@ export default function SwitchRouteProfileWrapper() {
   const [apiKey, setApiKey] = useState("");
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      const ccpAgent = window.connect?.agent?.();
-      const key = localStorage.getItem("connectApiKey");
-      if (ccpAgent && key) {
-        setAgent(ccpAgent);
-        setApiKey(key);
-        clearInterval(interval);
-      }
-    }, 1000);
+    const key = localStorage.getItem("connectApiKey");
 
-    return () => clearInterval(interval);
+    if (window.connect && window.connect.agent && key) {
+      window.connect.agent(agentData => {
+        console.log("✅ Agent loaded:", agentData.getName());
+        setAgent(agentData);
+        setApiKey(key);
+      });
+    } else {
+      console.warn("⏳ Waiting for connect.agent or API key");
+    }
   }, []);
 
-  if (!agent || !apiKey) return null;
+  if (!agent || !apiKey) return <p>Loading routing profile controls...</p>;
 
   return <SwitchRouteProfile agent={agent} apiKey={apiKey} />;
 }
