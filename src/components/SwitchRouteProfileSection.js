@@ -1,58 +1,19 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import axios from "axios";
 import "./SwitchRouteProfileSection.css";
 
-export default function SwitchRouteProfileSection({ agent, apiKey, onClose }) {
-  const [availableProfiles, setAvailableProfiles] = useState([]);
-  const [currentProfileId, setCurrentProfileId] = useState("");
+export default function SwitchRouteProfileSection({ agent, apiKey, availableProfiles, onClose }) {
   const [selectedProfileId, setSelectedProfileId] = useState("");
-  const [currentProfileName, setCurrentProfileName] = useState("");
   const [message, setMessage] = useState("");
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
   const instanceId = process.env.REACT_APP_CONNECT_INSTANCE_ID;
   const apiBase = process.env.REACT_APP_DISPURL;
 
-  useEffect(() => {
-    if (!agent?.getUsername) return;
-
-    const fetchRoutingProfiles = async () => {
-      try {
-        const userId = agent.getUsername();
-        const res = await axios.post(
-          `${apiBase}/getAvailableRoutingProfiles`,
-          { userId, instanceId },
-          {
-            headers: {
-              "Content-Type": "application/json",
-              "x-api-key": apiKey
-            }
-          }
-        );
-
-        const currentId = res.data.currentProfile;
-        const allowedProfiles = res.data.allowedProfiles;
-
-        setAvailableProfiles(allowedProfiles);
-        setCurrentProfileId(currentId);
-
-        const matched = allowedProfiles.find((p) => p.id === currentId);
-        setCurrentProfileName(matched?.name || "Unknown");
-      } catch (err) {
-        console.error("Failed to fetch routing profiles:", err);
-        setMessage("❌ Failed to load profiles.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchRoutingProfiles();
-  }, [agent, apiKey]);
-
   const handleSwitch = async () => {
     if (!selectedProfileId) return;
-    setMessage("⏳ Switching...");
     setLoading(true);
+    setMessage("⏳ Switching...");
 
     try {
       const payload = {
@@ -68,9 +29,6 @@ export default function SwitchRouteProfileSection({ agent, apiKey, onClose }) {
         }
       });
 
-      const selected = availableProfiles.find(p => p.id === selectedProfileId);
-      setCurrentProfileId(selectedProfileId);
-      setCurrentProfileName(selected?.name || selectedProfileId);
       setMessage("✅ Routing profile switched successfully.");
     } catch (err) {
       console.error("Switch failed:", err);
@@ -82,13 +40,6 @@ export default function SwitchRouteProfileSection({ agent, apiKey, onClose }) {
 
   return (
     <div className="switch-form">
-      <p>
-        <strong>Current Profile:</strong>{" "}
-        {loading ? "Loading..." : currentProfileName || "Not Assigned"}
-      </p>
-
-      {loading && <div className="spinner" />}
-
       <select
         className="switch-dropdown"
         value={selectedProfileId}
