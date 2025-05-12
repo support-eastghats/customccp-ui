@@ -4,27 +4,25 @@ import "./SwitchRouteProfileWrapper.css";
 
 export default function SwitchRouteProfileWrapper() {
   const [agent, setAgent] = useState(null);
+  const [loading, setLoading] = useState(true);
+
   const apiKey = process.env.REACT_APP_APIKEY;
 
   useEffect(() => {
     const interval = setInterval(() => {
-      if (window.connect?.agent) {
-        try {
-          window.connect.agent((agentObj) => {
-            console.log("✅ Agent initialized:", agentObj.getUsername());
-            setAgent(agentObj);
-          });
-          clearInterval(interval);
-        } catch (err) {
-          console.warn("⚠️ Agent not ready:", err.message);
-        }
+      const globalAgent = window.ccpAgent;
+      if (globalAgent) {
+        console.log("✅ Agent initialized in wrapper:", globalAgent.getUsername());
+        setAgent(globalAgent);
+        setLoading(false);
+        clearInterval(interval);
       }
     }, 1000);
 
     return () => clearInterval(interval);
   }, []);
 
-  if (!agent) {
+  if (loading) {
     return (
       <div className="profile-wrapper">
         <p>🔄 Waiting for CCP to initialize...</p>
@@ -32,11 +30,11 @@ export default function SwitchRouteProfileWrapper() {
     );
   }
 
-  if (!apiKey) {
+  if (!agent || !apiKey) {
     return (
       <div className="profile-wrapper">
         <p style={{ color: "red" }}>
-          ❌ API key is missing. Please check your .env config.
+          ⚠️ Agent or API Key not available. Please login through CCP.
         </p>
       </div>
     );

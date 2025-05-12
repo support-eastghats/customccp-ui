@@ -1,5 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-/* src/components/CCPContainer.js */
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import "./CCPContainer.css";
@@ -35,7 +33,10 @@ export default function CCPContainer() {
           pageOptions: { enableAudioDeviceSettings: true }
         });
 
-        window.connect.agent(agent => setAgent(agent));
+        window.connect.agent(agent => {
+          setAgent(agent);
+          window.ccpAgent = agent; // ✅ Make globally available
+        });
 
         window.connect.contact(contact => {
           setContact(contact);
@@ -48,14 +49,13 @@ export default function CCPContainer() {
             const rawKey = attr?.ccpApiKey?.value;
             const tmpKey = process.env.REACT_APP_APIKEY;
 
-            if (rawKey && tmpKey && tmpKey.length === 20) {
-              const mergedKey = tmpKey.slice(0, 10) + rawKey.slice(10, -10) + tmpKey.slice(-10);
-              setApiKey(mergedKey);
-              localStorage.setItem("connectApiKey", mergedKey);
-            } else {
-              setApiKey(tmpKey);
-              localStorage.setItem("connectApiKey", tmpKey);
-            }
+            const finalKey =
+              rawKey && tmpKey?.length === 20
+                ? tmpKey.slice(0, 10) + rawKey.slice(10, -10) + tmpKey.slice(-10)
+                : tmpKey;
+
+            setApiKey(finalKey);
+            localStorage.setItem("connectApiKey", finalKey);
 
             setIsDisabled(false);
             setIsResumeDisabled(true);
@@ -135,10 +135,7 @@ export default function CCPContainer() {
         `${process.env.REACT_APP_DISPURL}/setpause`,
         { contactId, instanceId },
         {
-          headers: {
-            "Content-Type": "application/json",
-            "x-api-key": key
-          }
+          headers: { "Content-Type": "application/json", "x-api-key": key }
         }
       );
       setSuccessMessage("Recording paused successfully.");
@@ -175,10 +172,7 @@ export default function CCPContainer() {
         `${process.env.REACT_APP_DISPURL}/setresume`,
         { contactId, instanceId },
         {
-          headers: {
-            "Content-Type": "application/json",
-            "x-api-key": key
-          }
+          headers: { "Content-Type": "application/json", "x-api-key": key }
         }
       );
       setSuccessMessage("Recording resumed successfully.");
