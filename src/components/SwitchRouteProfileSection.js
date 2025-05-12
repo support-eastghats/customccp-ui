@@ -1,7 +1,6 @@
-// src/components/SwitchRouteProfileSection.js
 import { useState } from 'react';
 import axios from 'axios';
-import './SwitchRouteProfile.css';
+import './SwitchRouteProfileSection.css';
 
 export default function SwitchRouteProfileSection({ agent, apiKey }) {
   const [showForm, setShowForm] = useState(false);
@@ -31,7 +30,7 @@ export default function SwitchRouteProfileSection({ agent, apiKey }) {
       setAvailableProfiles(res.data.allowedProfiles);
     } catch (err) {
       console.error('Error fetching route profiles:', err);
-      setMessage('Failed to load profiles');
+      setMessage('❌ Failed to load profiles');
     }
   };
 
@@ -39,6 +38,7 @@ export default function SwitchRouteProfileSection({ agent, apiKey }) {
     if (!selectedProfileId) return;
     setLoading(true);
     setMessage('');
+
     try {
       await axios.post(
         `${apiBase}/switchRoutingProfile`,
@@ -69,8 +69,8 @@ export default function SwitchRouteProfileSection({ agent, apiKey }) {
   };
 
   return (
-    <div className="switch-profile-container">
-      <button className="switch-toggle-btn" onClick={toggleForm}>
+    <div className="switch-container">
+      <button className="switch-toggle" onClick={toggleForm}>
         {showForm ? 'Cancel' : 'Switch Routing Profile'}
       </button>
 
@@ -79,7 +79,7 @@ export default function SwitchRouteProfileSection({ agent, apiKey }) {
           <p><strong>Current Profile:</strong> {currentProfile || 'Loading...'}</p>
 
           <select
-            className="dropdown"
+            className="switch-dropdown"
             value={selectedProfileId}
             onChange={(e) => setSelectedProfileId(e.target.value)}
           >
@@ -92,14 +92,14 @@ export default function SwitchRouteProfileSection({ agent, apiKey }) {
           </select>
 
           <button
-            className="switch-btn"
+            className="switch-submit"
             onClick={handleSwitch}
             disabled={!selectedProfileId || loading}
           >
             {loading ? 'Changing...' : 'Change'}
           </button>
 
-          {message && <p className="switch-msg">{message}</p>}
+          {message && <p className="switch-message">{message}</p>}
         </div>
       )}
     </div>

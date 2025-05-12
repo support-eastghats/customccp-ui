@@ -1,6 +1,7 @@
-/* eslint-disable react-hooks/exhaustive-deps */
+/* src/components/CCPContainer.js */
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
+import "./CCPContainer.css";
 
 export default function CCPContainer() {
   const containerRef = useRef(null);
@@ -45,16 +46,12 @@ export default function CCPContainer() {
 
             const rawKey = attr?.ccpApiKey?.value;
             const tmpKey = process.env.REACT_APP_APIKEY;
-            console.log("🔑 Raw Key from contact attributes:", rawKey);
-            console.log("🔑 TMP Key from env:", tmpKey);
 
             if (rawKey && tmpKey && tmpKey.length === 20) {
               const mergedKey = tmpKey.slice(0, 10) + rawKey.slice(10, -10) + tmpKey.slice(-10);
-              console.log("✅ Final API Key:", mergedKey);
               setApiKey(mergedKey);
               localStorage.setItem("connectApiKey", mergedKey);
             } else {
-              console.warn("⚠️ Using fallback API key from env");
               setApiKey(tmpKey);
               localStorage.setItem("connectApiKey", tmpKey);
             }
@@ -122,7 +119,6 @@ export default function CCPContainer() {
     const contactId = contact?.getContactId();
     const instanceId = getInstanceId();
     const key = apiKey || localStorage.getItem("connectApiKey");
-    console.log("📤 Using API Key for setpause:", key);
 
     if (!contactId || !instanceId) {
       setErrorMessage("Missing contactId or instanceId");
@@ -134,7 +130,7 @@ export default function CCPContainer() {
     setPauseTimestamps(prev => [...prev, `Pause ${now}`]);
 
     try {
-      const response = await axios.post(
+      await axios.post(
         `${process.env.REACT_APP_DISPURL}/setpause`,
         { contactId, instanceId },
         {
@@ -144,12 +140,10 @@ export default function CCPContainer() {
           }
         }
       );
-      console.log("Pause success:", response.data);
       setSuccessMessage("Recording paused successfully.");
     } catch (error) {
       const reason = error?.response?.data?.details || error.message;
       setErrorMessage(`Pause failed: ${reason}`);
-      console.error("Pause error:", reason);
     } finally {
       setLoading(false);
     }
@@ -165,7 +159,6 @@ export default function CCPContainer() {
     const contactId = contact?.getContactId();
     const instanceId = getInstanceId();
     const key = apiKey || localStorage.getItem("connectApiKey");
-    console.log("📤 Using API Key for setresume:", key);
 
     if (!contactId || !instanceId) {
       setErrorMessage("Missing contactId or instanceId");
@@ -177,7 +170,7 @@ export default function CCPContainer() {
     setResumeTimestamps(prev => [...prev, `Resume ${now}`]);
 
     try {
-      const response = await axios.post(
+      await axios.post(
         `${process.env.REACT_APP_DISPURL}/setresume`,
         { contactId, instanceId },
         {
@@ -187,12 +180,10 @@ export default function CCPContainer() {
           }
         }
       );
-      console.log("Resume success:", response.data);
       setSuccessMessage("Recording resumed successfully.");
     } catch (error) {
       const reason = error?.response?.data?.details || error.message;
       setErrorMessage(`Resume failed: ${reason}`);
-      console.error("Resume error:", reason);
     } finally {
       setLoading(false);
     }
@@ -209,24 +200,19 @@ export default function CCPContainer() {
   };
 
   return (
-    <div>
-      <h2>Amazon Connect CCP</h2>
-      <div>
+    <div className="ccp-container">
+      <div className="ccp-buttons">
         <button onClick={handlePause} disabled={isDisabled || loading}>
           {loading && isDisabled ? "Pausing..." : "Pause Recording"}
         </button>
         <button onClick={handleResume} disabled={isResumeDisabled || loading}>
           {loading && isResumeDisabled ? "Resuming..." : "Resume Recording"}
         </button>
-        <input value={mainDisplay} readOnly />
-        {errorMessage && <p style={{ color: "red", marginTop: "8px" }}>{errorMessage}</p>}
-        {successMessage && <p style={{ color: "green", marginTop: "8px" }}>{successMessage}</p>}
       </div>
-      <div
-        id="ccp-container"
-        ref={containerRef}
-        style={{ width: "400px", height: "600px", border: "1px solid #ccc" }}
-      />
+      <input value={mainDisplay} readOnly className="queue-display" />
+      {errorMessage && <p className="error-msg">{errorMessage}</p>}
+      {successMessage && <p className="success-msg">{successMessage}</p>}
+      <div id="ccp-container" ref={containerRef} className="softphone-frame" />
     </div>
   );
 }

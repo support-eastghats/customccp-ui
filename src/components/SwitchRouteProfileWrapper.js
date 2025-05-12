@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import SwitchRouteProfileSection from "./SwitchRouteProfileSection";
+import "./SwitchRouteProfileWrapper.css";
 
 export default function SwitchRouteProfileWrapper() {
   const [agent, setAgent] = useState(null);
@@ -21,5 +22,9 @@ export default function SwitchRouteProfileWrapper() {
 
   if (!agent || !apiKey) return null;
 
-  return <SwitchRouteProfileSection agent={agent} apiKey={apiKey} />;
+  return (
+    <div className="profile-wrapper">
+      <SwitchRouteProfileSection agent={agent} apiKey={apiKey} />
+    </div>
+  );
 }
