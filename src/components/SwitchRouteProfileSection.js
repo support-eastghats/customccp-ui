@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react';
+// src/components/SwitchRouteProfileSection.js
+import { useState } from 'react';
 import axios from 'axios';
 
 export default function SwitchRouteProfileSection({ agent, apiKey }) {
@@ -35,7 +36,6 @@ export default function SwitchRouteProfileSection({ agent, apiKey }) {
 
   const handleSwitch = async () => {
     if (!selectedProfileId) return;
-
     setLoading(true);
     setMessage('');
 
