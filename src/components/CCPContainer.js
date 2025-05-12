@@ -37,7 +37,7 @@ export default function CCPContainer({ setAgent, setApiKey }) {
         window.connect.agent(agent => {
           setAgent(agent);
           setAgentName(agent.getName());
-          setAgentId(agent.getConfiguration()?.agentId || "Unknown");
+          setAgentId(agent.getAgentId() || "Unknown");
           window.ccpAgent = agent;
 
           const finalKey = process.env.REACT_APP_APIKEY;
