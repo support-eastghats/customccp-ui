@@ -15,11 +15,6 @@ export default function SwitchRouteProfileSection({ agent, apiKey }) {
 
   const fetchRoutingProfiles = async () => {
     try {
-      if (!agent || !agent.getUsername) {
-        console.warn("⚠️ Agent not ready in fetchRoutingProfiles");
-        return;
-      }
-
       const userId = agent.getUsername();
       console.log("📤 Fetching routing profiles for user:", userId);
 
@@ -34,12 +29,12 @@ export default function SwitchRouteProfileSection({ agent, apiKey }) {
         }
       );
 
-      console.log("✅ Routing profiles fetched:", res.data);
       setCurrentProfile(res.data.currentProfile);
       setAvailableProfiles(res.data.allowedProfiles);
+      console.log("✅ Profiles received:", res.data);
     } catch (err) {
-      console.error("❌ Error fetching profiles:", err);
-      setMessage("Failed to load profiles");
+      console.error("❌ Error fetching routing profiles:", err);
+      setMessage("Failed to load routing profiles.");
     }
   };
 
@@ -50,12 +45,10 @@ export default function SwitchRouteProfileSection({ agent, apiKey }) {
     setMessage("");
 
     const payload = {
-      userId: agent?.getUsername(),
+      userId: agent.getUsername(),
       instanceId,
       routingProfileId: selectedProfileId,
     };
-
-    console.log("📤 Switching routing profile with:", payload);
 
     try {
       const res = await axios.post(`${apiBase}/switchRoutingProfile`, payload, {
@@ -64,12 +57,11 @@ export default function SwitchRouteProfileSection({ agent, apiKey }) {
           "x-api-key": apiKey,
         },
       });
-
-      console.log("✅ Profile switched:", res.data);
+      console.log("✅ Switch success:", res.data);
       setMessage("✅ Routing profile switched successfully!");
     } catch (err) {
       console.error("❌ Switch failed:", err.response?.data || err.message);
-      setMessage("❌ Failed to switch routing profile");
+      setMessage("❌ Failed to switch routing profile.");
     } finally {
       setLoading(false);
     }

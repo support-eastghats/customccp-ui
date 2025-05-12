@@ -4,27 +4,34 @@ import "./SwitchRouteProfileWrapper.css";
 
 export default function SwitchRouteProfileWrapper() {
   const [agent, setAgent] = useState(null);
+  const apiKey = process.env.REACT_APP_APIKEY;
 
   useEffect(() => {
     const interval = setInterval(() => {
-      const ccpAgent = window.connect?.agent?.();
-      if (ccpAgent) {
-        console.log("✅ Agent detected:", ccpAgent.getName());
-        setAgent(ccpAgent);
-        clearInterval(interval);
+      if (window.connect?.agent) {
+        const ccpAgent = window.connect.agent();
+        if (ccpAgent?.getUsername()) {
+          console.log("✅ Agent ready:", ccpAgent.getUsername());
+          setAgent(ccpAgent);
+          clearInterval(interval);
+        }
       }
-    }, 1000);
+    }, 500);
 
     return () => clearInterval(interval);
   }, []);
 
+  if (!agent) {
+    return (
+      <div className="profile-wrapper">
+        <p>⏳ Detecting agent info...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="profile-wrapper">
-      {agent ? (
-        <SwitchRouteProfileSection agent={agent} apiKey={process.env.REACT_APP_APIKEY} />
-      ) : (
-        <p>⏳ Detecting agent info...</p>
-      )}
+      <SwitchRouteProfileSection agent={agent} apiKey={apiKey} />
     </div>
   );
 }

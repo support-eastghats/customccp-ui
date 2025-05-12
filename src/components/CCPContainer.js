@@ -5,6 +5,7 @@ import "./CCPContainer.css";
 export default function CCPContainer() {
   const containerRef = useRef(null);
   const [agent, setAgent] = useState(null);
+  const [agentName, setAgentName] = useState(""); // 👤 New
   const [contact, setContact] = useState(null);
   const [mainDisplay, setMainDisplay] = useState("");
   const [isDisabled, setIsDisabled] = useState(true);
@@ -35,7 +36,10 @@ export default function CCPContainer() {
 
         window.connect.agent(agent => {
           setAgent(agent);
-          window.ccpAgent = agent; // ✅ Make globally available
+          window.ccpAgent = agent;
+
+          const name = agent.getName?.() || agent.getUsername?.() || "Unknown Agent";
+          setAgentName(name);
         });
 
         window.connect.contact(contact => {
@@ -196,6 +200,11 @@ export default function CCPContainer() {
 
   return (
     <div className="ccp-container">
+      {agentName && (
+        <div className="agent-info">
+          👤 Logged in as: <strong>{agentName}</strong>
+        </div>
+      )}
       <div className="ccp-buttons">
         <button onClick={handlePause} disabled={isDisabled || loading}>
           {loading && isDisabled ? "Pausing..." : "Pause Recording"}
