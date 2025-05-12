@@ -2,21 +2,18 @@ import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import "./CCPContainer.css";
 
-export default function CCPContainer() {
+export default function CCPContainer({ setAgent, setApiKey }) {
   const containerRef = useRef(null);
-  const [agent, setAgent] = useState(null);
-  const [agentName, setAgentName] = useState("");
-  const [agentRoutingProfile, setAgentRoutingProfile] = useState("");
   const [contact, setContact] = useState(null);
   const [mainDisplay, setMainDisplay] = useState("");
   const [isDisabled, setIsDisabled] = useState(true);
   const [isResumeDisabled, setIsResumeDisabled] = useState(true);
   const [pauseTimestamps, setPauseTimestamps] = useState([]);
   const [resumeTimestamps, setResumeTimestamps] = useState([]);
-  const [apiKey, setApiKey] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [agentName, setAgentName] = useState("");
 
   useEffect(() => {
     const script = document.createElement("script");
@@ -36,44 +33,39 @@ export default function CCPContainer() {
         });
 
         window.connect.agent(agent => {
-          setAgent(agent);
+          setAgent(agent); // use prop function
+          setAgentName(agent.getName());
           window.ccpAgent = agent;
 
-          const name = agent.getName?.() || agent.getUsername?.() || "Unknown Agent";
-          setAgentName(name);
+          window.connect.contact(contact => {
+            setContact(contact);
 
-          const profile = agent.getRoutingProfile?.()?.name || "";
-          setAgentRoutingProfile(profile);
-        });
+            contact.onConnected(() => {
+              const attr = contact.getAttributes();
+              const queue = contact.getQueue();
+              setMainDisplay(queue?.name || "");
 
-        window.connect.contact(contact => {
-          setContact(contact);
+              const rawKey = attr?.ccpApiKey?.value;
+              const tmpKey = process.env.REACT_APP_APIKEY;
 
-          contact.onConnected(() => {
-            const attr = contact.getAttributes();
-            const queue = contact.getQueue();
-            setMainDisplay(queue?.name || "");
+              const finalKey =
+                rawKey && tmpKey?.length === 20
+                  ? tmpKey.slice(0, 10) + rawKey.slice(10, -10) + tmpKey.slice(-10)
+                  : tmpKey;
 
-            const rawKey = attr?.ccpApiKey?.value;
-            const tmpKey = process.env.REACT_APP_APIKEY;
+              setApiKey(finalKey); // use prop function
+              localStorage.setItem("connectApiKey", finalKey);
 
-            const finalKey =
-              rawKey && tmpKey?.length === 20
-                ? tmpKey.slice(0, 10) + rawKey.slice(10, -10) + tmpKey.slice(-10)
-                : tmpKey;
+              setIsDisabled(false);
+              setIsResumeDisabled(true);
+              setErrorMessage("");
+              setSuccessMessage("");
+            });
 
-            setApiKey(finalKey);
-            localStorage.setItem("connectApiKey", finalKey);
-
-            setIsDisabled(false);
-            setIsResumeDisabled(true);
-            setErrorMessage("");
-            setSuccessMessage("");
-          });
-
-          contact.onEnded(() => {
-            sendPauseResumeRecords();
-            resetState();
+            contact.onEnded(() => {
+              sendPauseResumeRecords();
+              resetState();
+            });
           });
         });
       }
@@ -83,17 +75,17 @@ export default function CCPContainer() {
     return () => {
       script.remove();
     };
-  }, []);
+  }, [setAgent, setApiKey]);
 
   const getInstanceId = () => {
-    const arn = agent?.getRoutingProfile()?.routingProfileARN;
+    const arn = window.ccpAgent?.getRoutingProfile()?.routingProfileARN;
     return arn?.split("/")[1] || process.env.REACT_APP_CONNECT_INSTANCE_ID;
   };
 
   const sendPauseResumeRecords = async () => {
     const instanceId = getInstanceId();
     const contactId = contact?.getContactId();
-    const key = apiKey || localStorage.getItem("connectApiKey");
+    const key = localStorage.getItem("connectApiKey");
 
     if (key && pauseTimestamps.length && resumeTimestamps.length && contactId && instanceId) {
       try {
@@ -127,7 +119,7 @@ export default function CCPContainer() {
 
     const contactId = contact?.getContactId();
     const instanceId = getInstanceId();
-    const key = apiKey || localStorage.getItem("connectApiKey");
+    const key = localStorage.getItem("connectApiKey");
 
     if (!contactId || !instanceId) {
       setErrorMessage("Missing contactId or instanceId");
@@ -164,7 +156,7 @@ export default function CCPContainer() {
 
     const contactId = contact?.getContactId();
     const instanceId = getInstanceId();
-    const key = apiKey || localStorage.getItem("connectApiKey");
+    const key = localStorage.getItem("connectApiKey");
 
     if (!contactId || !instanceId) {
       setErrorMessage("Missing contactId or instanceId");
@@ -204,11 +196,9 @@ export default function CCPContainer() {
 
   return (
     <div className="ccp-container">
-      {agentName && (
-        <div className="agent-info">
-          👤 <strong>{agentName}</strong> | 📌 Routing Profile: <strong>{agentRoutingProfile}</strong>
-        </div>
-      )}
+      <h3 style={{ marginBottom: "1rem", color: "#333" }}>
+        👤 Agent: {agentName || "Detecting..."}
+      </h3>
 
       <div className="ccp-buttons">
         <button onClick={handlePause} disabled={isDisabled || loading}>
@@ -220,6 +210,7 @@ export default function CCPContainer() {
       </div>
 
       <input value={mainDisplay} readOnly className="queue-display" />
+
       {errorMessage && <p className="error-msg">{errorMessage}</p>}
       {successMessage && <p className="success-msg">{successMessage}</p>}
 

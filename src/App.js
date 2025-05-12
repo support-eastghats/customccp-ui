@@ -6,6 +6,8 @@ import "./App.css";
 
 function App() {
   const [darkMode, setDarkMode] = useState(false);
+  const [agent, setAgent] = useState(null);
+  const [apiKey, setApiKey] = useState("");
 
   return (
     <div className={`App ${darkMode ? "dark" : ""}`}>
@@ -18,10 +20,10 @@ function App() {
 
       <div className="app-container">
         <div className="card">
-          <CCPContainer />
+          <CCPContainer setAgent={setAgent} setApiKey={setApiKey} />
         </div>
         <div className="card">
-          <SwitchRouteProfileWrapper />
+          <SwitchRouteProfileWrapper agent={agent} apiKey={apiKey} />
         </div>
       </div>
     </div>
