@@ -14,6 +14,7 @@ export default function CCPContainer({ setAgent, setApiKey }) {
   const [successMessage, setSuccessMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [agentName, setAgentName] = useState("");
+  const [currentProfileName, setCurrentProfileName] = useState("");
 
   useEffect(() => {
     const script = document.createElement("script");
@@ -32,8 +33,7 @@ export default function CCPContainer({ setAgent, setApiKey }) {
           pageOptions: { enableAudioDeviceSettings: true }
         });
 
-        window.connect.agent(agent => {
-          // ✅ Set agent and API key immediately
+        window.connect.agent(async agent => {
           setAgent(agent);
           setAgentName(agent.getName());
           window.ccpAgent = agent;
@@ -44,6 +44,9 @@ export default function CCPContainer({ setAgent, setApiKey }) {
 
           console.log("✅ Agent initialized:", agent.getName());
           console.log("🔐 API Key set from .env:", finalKey);
+
+          // ✅ Fetch current profile name immediately
+          await fetchCurrentRoutingProfile(agent);
 
           window.connect.contact(contact => {
             setContact(contact);
@@ -102,6 +105,32 @@ export default function CCPContainer({ setAgent, setApiKey }) {
   const getInstanceId = () => {
     const arn = window.ccpAgent?.getRoutingProfile()?.routingProfileARN;
     return arn?.split("/")[1] || process.env.REACT_APP_CONNECT_INSTANCE_ID;
+  };
+
+  const fetchCurrentRoutingProfile = async (agent) => {
+    try {
+      const instanceId = getInstanceId();
+      const userId = agent.getUsername();
+      const apiKey = process.env.REACT_APP_APIKEY;
+
+      const res = await axios.post(
+        `${process.env.REACT_APP_DISPURL}/getAvailableRoutingProfiles`,
+        { userId, instanceId },
+        {
+          headers: {
+            "Content-Type": "application/json",
+            "x-api-key": apiKey
+          }
+        }
+      );
+
+      const currentId = res.data.currentProfile;
+      const matched = res.data.allowedProfiles.find(p => p.id === currentId);
+      setCurrentProfileName(matched?.name || "Unknown");
+    } catch (error) {
+      console.error("❌ Failed to fetch routing profile:", error);
+      setCurrentProfileName("Unavailable");
+    }
   };
 
   const handlePause = async () => {
@@ -190,9 +219,13 @@ export default function CCPContainer({ setAgent, setApiKey }) {
 
   return (
     <div className="ccp-container">
-      <h3 style={{ marginBottom: "1rem", color: "#333" }}>
+      <h3 style={{ marginBottom: "0.5rem", color: "#333" }}>
         👤 Agent: {agentName || "Detecting..."}
       </h3>
+
+      <p style={{ marginBottom: "1rem", fontWeight: 500 }}>
+        🎯 Current Routing Profile: {currentProfileName || "Loading..."}
+      </p>
 
       <div className="ccp-buttons">
         <button onClick={handlePause} disabled={isDisabled || loading}>

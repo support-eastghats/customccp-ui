@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { useState, useEffect } from "react";
 import axios from "axios";
 import "./SwitchRouteProfileSection.css";
@@ -15,29 +14,15 @@ export default function SwitchRouteProfileSection({ agent, apiKey }) {
   const apiBase = process.env.REACT_APP_DISPURL;
 
   useEffect(() => {
-    let retryInterval;
+    if (!agent?.getUsername) return;
 
-    const tryFetchProfiles = () => {
-      if (agent?.getUsername) {
-        console.log("📤 Fetching routing profiles for:", agent.getUsername());
-        fetchRoutingProfiles();
-        clearInterval(retryInterval);
-      }
-    };
-
-    if (agent?.getUsername) {
-      fetchRoutingProfiles();
-    } else {
-      console.warn("⏳ Agent not ready, retrying...");
-      retryInterval = setInterval(tryFetchProfiles, 1000);
-    }
-
-    return () => clearInterval(retryInterval);
+    fetchRoutingProfiles();
   }, [agent]);
 
   const fetchRoutingProfiles = async () => {
     try {
       const userId = agent.getUsername();
+
       const res = await axios.post(
         `${apiBase}/getAvailableRoutingProfiles`,
         { userId, instanceId },
@@ -77,6 +62,8 @@ export default function SwitchRouteProfileSection({ agent, apiKey }) {
       });
 
       setMessage("✅ Routing profile switched successfully!");
+      setCurrentProfile(selectedProfileId);
+      fetchRoutingProfiles(); // Refresh list if needed
     } catch (err) {
       console.error("❌ Switch failed:", err.response?.data || err.message);
       setMessage("❌ Failed to switch routing profile");
