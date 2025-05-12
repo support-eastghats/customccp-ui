@@ -1,4 +1,3 @@
-// src/components/SwitchRouteProfileWrapper.js
 import SwitchRouteProfileSection from "./SwitchRouteProfileSection";
 import "./SwitchRouteProfileWrapper.css";
 

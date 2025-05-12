@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import "./CCPContainer.css";
@@ -33,7 +34,7 @@ export default function CCPContainer({ setAgent, setApiKey }) {
         });
 
         window.connect.agent(agent => {
-          setAgent(agent); // use prop function
+          setAgent(agent);
           setAgentName(agent.getName());
           window.ccpAgent = agent;
 
@@ -45,21 +46,13 @@ export default function CCPContainer({ setAgent, setApiKey }) {
               const queue = contact.getQueue();
               setMainDisplay(queue?.name || "");
 
-              const rawKey = attr?.ccpApiKey?.value;
-              const tmpKey = process.env.REACT_APP_APIKEY;
+              const finalKey = process.env.REACT_APP_APIKEY;
 
-              const finalKey =
-                rawKey && tmpKey?.length === 20
-                  ? tmpKey.slice(0, 10) + rawKey.slice(10, -10) + tmpKey.slice(-10)
-                  : tmpKey;
-
-              setApiKey(finalKey); // use prop function
+              setApiKey(finalKey);
               localStorage.setItem("connectApiKey", finalKey);
 
               console.log("🧩 Contact Attributes:", attr);
-              console.log("🔑 rawKey:", rawKey);
-              console.log("🧪 tmpKey (from .env):", tmpKey);
-              console.log("🔒 Final API Key to be set:", finalKey);
+              console.log("🔒 Final API Key to be set (from .env):", finalKey);
 
               setIsDisabled(false);
               setIsResumeDisabled(true);
@@ -68,7 +61,30 @@ export default function CCPContainer({ setAgent, setApiKey }) {
             });
 
             contact.onEnded(() => {
-              sendPauseResumeRecords();
+              const instanceId = getInstanceId();
+              const contactId = contact?.getContactId();
+              const key = localStorage.getItem("connectApiKey");
+
+              if (key && pauseTimestamps.length && resumeTimestamps.length && contactId && instanceId) {
+                axios.put(
+                  `${process.env.REACT_APP_DISPURL}/setpauseresumeattr`,
+                  {
+                    pauseCtrData: pauseTimestamps.join(", "),
+                    resumeCtrData: resumeTimestamps.join(", "),
+                    contactId,
+                    instanceId
+                  },
+                  {
+                    headers: {
+                      "Content-Type": "application/json",
+                      "x-api-key": key
+                    }
+                  }
+                ).catch((error) => {
+                  console.error("Failed to record pause/resume:", error);
+                });
+              }
+
               resetState();
             });
           });
@@ -85,34 +101,6 @@ export default function CCPContainer({ setAgent, setApiKey }) {
   const getInstanceId = () => {
     const arn = window.ccpAgent?.getRoutingProfile()?.routingProfileARN;
     return arn?.split("/")[1] || process.env.REACT_APP_CONNECT_INSTANCE_ID;
-  };
-
-  const sendPauseResumeRecords = async () => {
-    const instanceId = getInstanceId();
-    const contactId = contact?.getContactId();
-    const key = localStorage.getItem("connectApiKey");
-
-    if (key && pauseTimestamps.length && resumeTimestamps.length && contactId && instanceId) {
-      try {
-        await axios.put(
-          `${process.env.REACT_APP_DISPURL}/setpauseresumeattr`,
-          {
-            pauseCtrData: pauseTimestamps.join(", "),
-            resumeCtrData: resumeTimestamps.join(", "),
-            contactId,
-            instanceId
-          },
-          {
-            headers: {
-              "Content-Type": "application/json",
-              "x-api-key": key
-            }
-          }
-        );
-      } catch (error) {
-        console.error("Failed to record pause/resume:", error);
-      }
-    }
   };
 
   const handlePause = async () => {

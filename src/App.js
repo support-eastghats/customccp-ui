@@ -1,4 +1,3 @@
-// src/App.js
 import { useState, useEffect } from "react";
 import CCPContainer from "./components/CCPContainer";
 import SwitchRouteProfileWrapper from "./components/SwitchRouteProfileWrapper";
@@ -14,7 +13,7 @@ function App() {
       console.log("✅ Agent set in App:", agent.getName());
     }
     console.log("🔑 API Key in App:", apiKey);
-  }, [agent, apiKey]);  
+  }, [agent, apiKey]);
 
   return (
     <div className={`App ${darkMode ? "dark" : ""}`}>
