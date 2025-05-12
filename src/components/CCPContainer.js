@@ -33,7 +33,7 @@ export default function CCPContainer({ setAgent, setApiKey }) {
           pageOptions: { enableAudioDeviceSettings: true }
         });
 
-        window.connect.agent(async agent => {
+        window.connect.agent(agent => {
           setAgent(agent);
           setAgentName(agent.getName());
           window.ccpAgent = agent;
@@ -42,11 +42,12 @@ export default function CCPContainer({ setAgent, setApiKey }) {
           setApiKey(finalKey);
           localStorage.setItem("connectApiKey", finalKey);
 
-          console.log("✅ Agent initialized:", agent.getName());
-          console.log("🔐 API Key set from .env:", finalKey);
+          const profile = agent.getRoutingProfile();
+          setCurrentProfileName(profile?.name || "Unavailable");
 
-          // ✅ Fetch current profile name immediately
-          await fetchCurrentRoutingProfile(agent);
+          console.log("✅ Agent initialized:", agent.getName());
+          console.log("🎯 Routing Profile:", profile?.name);
+          console.log("🔐 API Key set from .env:", finalKey);
 
           window.connect.contact(contact => {
             setContact(contact);
@@ -105,32 +106,6 @@ export default function CCPContainer({ setAgent, setApiKey }) {
   const getInstanceId = () => {
     const arn = window.ccpAgent?.getRoutingProfile()?.routingProfileARN;
     return arn?.split("/")[1] || process.env.REACT_APP_CONNECT_INSTANCE_ID;
-  };
-
-  const fetchCurrentRoutingProfile = async (agent) => {
-    try {
-      const instanceId = getInstanceId();
-      const userId = agent.getUsername();
-      const apiKey = process.env.REACT_APP_APIKEY;
-
-      const res = await axios.post(
-        `${process.env.REACT_APP_DISPURL}/getAvailableRoutingProfiles`,
-        { userId, instanceId },
-        {
-          headers: {
-            "Content-Type": "application/json",
-            "x-api-key": apiKey
-          }
-        }
-      );
-
-      const currentId = res.data.currentProfile;
-      const matched = res.data.allowedProfiles.find(p => p.id === currentId);
-      setCurrentProfileName(matched?.name || "Unknown");
-    } catch (error) {
-      console.error("❌ Failed to fetch routing profile:", error);
-      setCurrentProfileName("Unavailable");
-    }
   };
 
   const handlePause = async () => {
