@@ -39,6 +39,11 @@ export default function CCPContainer({ setAgent, setApiKey }) {
           setAgentName(agent.getName());
           window.ccpAgent = agent;
 
+          // ✅ Get Agent ID from ARN
+          const fullArn = agent.getAgentARN();
+          const id = fullArn?.split("/").pop(); // Last segment of ARN
+          setAgentId(id || "Unavailable");
+
           const finalKey = process.env.REACT_APP_APIKEY;
           setApiKey(finalKey);
           localStorage.setItem("connectApiKey", finalKey);
@@ -46,12 +51,10 @@ export default function CCPContainer({ setAgent, setApiKey }) {
           const profile = agent.getRoutingProfile();
           setCurrentProfileName(profile?.name || "Unavailable");
 
-          // ✅ Wait for full configuration before getting agent ID
-          agent.onRefresh(() => {
-            const id = agent.getConfiguration()?.agentId;
-            console.log("🆔 Refreshed Agent ID:", id);
-            setAgentId(id || "Unavailable");
-          });
+          console.log("✅ Agent:", agent.getName());
+          console.log("🆔 Agent ID:", id);
+          console.log("🎯 Routing Profile:", profile?.name);
+          console.log("🔐 API Key:", finalKey);
 
           window.connect.contact(contact => {
             setContact(contact);
