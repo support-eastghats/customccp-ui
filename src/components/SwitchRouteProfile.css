@@ -1,0 +1,53 @@
+.switch-profile-container {
+    margin-top: 2rem;
+    padding: 1rem;
+    border-top: 2px solid #e0e0e0;
+    font-family: sans-serif;
+  }
+  
+  .switch-toggle-btn {
+    background-color: #0073bb;
+    color: white;
+    padding: 8px 14px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  
+  .switch-toggle-btn:hover {
+    background-color: #005fa3;
+  }
+  
+  .switch-form {
+    margin-top: 1rem;
+  }
+  
+  .dropdown {
+    padding: 8px;
+    width: 100%;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+  }
+  
+  .switch-btn {
+    margin-top: 10px;
+    padding: 8px 14px;
+    background-color: #28a745;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  
+  .switch-btn:disabled {
+    background-color: #bfbfbf;
+    cursor: not-allowed;
+  }
+  
+  .switch-msg {
+    margin-top: 0.75rem;
+    font-weight: 500;
+  }
+  

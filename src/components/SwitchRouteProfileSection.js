@@ -1,6 +1,7 @@
 // src/components/SwitchRouteProfileSection.js
 import { useState } from 'react';
 import axios from 'axios';
+import './SwitchRouteProfile.css';
 
 export default function SwitchRouteProfileSection({ agent, apiKey }) {
   const [showForm, setShowForm] = useState(false);
@@ -38,7 +39,6 @@ export default function SwitchRouteProfileSection({ agent, apiKey }) {
     if (!selectedProfileId) return;
     setLoading(true);
     setMessage('');
-
     try {
       await axios.post(
         `${apiBase}/switchRoutingProfile`,
@@ -64,26 +64,24 @@ export default function SwitchRouteProfileSection({ agent, apiKey }) {
   };
 
   const toggleForm = () => {
-    if (!showForm) {
-      fetchRoutingProfiles();
-    }
+    if (!showForm) fetchRoutingProfiles();
     setShowForm(!showForm);
   };
 
   return (
-    <div style={{ marginTop: '1rem', borderTop: '1px solid #ccc', paddingTop: '1rem' }}>
-      <button onClick={toggleForm}>
+    <div className="switch-profile-container">
+      <button className="switch-toggle-btn" onClick={toggleForm}>
         {showForm ? 'Cancel' : 'Switch Routing Profile'}
       </button>
 
       {showForm && (
-        <div style={{ marginTop: '1rem' }}>
+        <div className="switch-form">
           <p><strong>Current Profile:</strong> {currentProfile || 'Loading...'}</p>
 
           <select
+            className="dropdown"
             value={selectedProfileId}
             onChange={(e) => setSelectedProfileId(e.target.value)}
-            style={{ padding: '6px', width: '100%', marginBottom: '1rem' }}
           >
             <option value="">-- Select Routing Profile --</option>
             {availableProfiles.map((profile) => (
@@ -94,14 +92,14 @@ export default function SwitchRouteProfileSection({ agent, apiKey }) {
           </select>
 
           <button
+            className="switch-btn"
             onClick={handleSwitch}
             disabled={!selectedProfileId || loading}
-            style={{ padding: '8px 12px' }}
           >
             {loading ? 'Changing...' : 'Change'}
           </button>
 
-          {message && <p style={{ marginTop: '10px' }}>{message}</p>}
+          {message && <p className="switch-msg">{message}</p>}
         </div>
       )}
     </div>
