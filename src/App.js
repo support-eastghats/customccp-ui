@@ -13,7 +13,8 @@ function App() {
     if (agent) {
       console.log("✅ Agent set in App:", agent.getName());
     }
-  }, [agent]);
+    console.log("🔑 API Key in App:", apiKey);
+  }, [agent, apiKey]);  
 
   return (
     <div className={`App ${darkMode ? "dark" : ""}`}>

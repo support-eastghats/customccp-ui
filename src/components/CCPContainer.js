@@ -56,6 +56,11 @@ export default function CCPContainer({ setAgent, setApiKey }) {
               setApiKey(finalKey); // use prop function
               localStorage.setItem("connectApiKey", finalKey);
 
+              console.log("🧩 Contact Attributes:", attr);
+              console.log("🔑 rawKey:", rawKey);
+              console.log("🧪 tmpKey (from .env):", tmpKey);
+              console.log("🔒 Final API Key to be set:", finalKey);
+
               setIsDisabled(false);
               setIsResumeDisabled(true);
               setErrorMessage("");
