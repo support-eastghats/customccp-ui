@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* src/components/CCPContainer.js */
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";

@@ -1,33 +1,30 @@
-// src/components/SwitchRouteProfileWrapper.js
 import { useEffect, useState } from "react";
 import SwitchRouteProfileSection from "./SwitchRouteProfileSection";
 import "./SwitchRouteProfileWrapper.css";
 
 export default function SwitchRouteProfileWrapper() {
   const [agent, setAgent] = useState(null);
-  const [apiKey, setApiKey] = useState("");
-  const [loading, setLoading] = useState(true);
+  const apiKey = process.env.REACT_APP_APIKEY;
 
   useEffect(() => {
     const interval = setInterval(() => {
-      const ccpAgent = window.connect?.agent?.();
-      const key = localStorage.getItem("connectApiKey");
-
-      console.log("🔍 Checking CCP agent:", ccpAgent);
-      console.log("🔍 Checking API key:", key);
-
-      if (ccpAgent && key) {
-        setAgent(ccpAgent);
-        setApiKey(key);
-        setLoading(false);
-        clearInterval(interval);
+      if (window.connect?.agent) {
+        try {
+          window.connect.agent((agentObj) => {
+            console.log("✅ Agent initialized:", agentObj.getUsername());
+            setAgent(agentObj);
+          });
+          clearInterval(interval);
+        } catch (err) {
+          console.warn("⚠️ Agent not ready:", err.message);
+        }
       }
     }, 1000);
 
     return () => clearInterval(interval);
   }, []);
 
-  if (loading) {
+  if (!agent) {
     return (
       <div className="profile-wrapper">
         <p>🔄 Waiting for CCP to initialize...</p>
@@ -35,10 +32,12 @@ export default function SwitchRouteProfileWrapper() {
     );
   }
 
-  if (!agent || !apiKey) {
+  if (!apiKey) {
     return (
       <div className="profile-wrapper">
-        <p style={{ color: "red" }}>⚠️ Agent or API Key not available. Please login through CCP.</p>
+        <p style={{ color: "red" }}>
+          ❌ API key is missing. Please check your .env config.
+        </p>
       </div>
     );
   }
