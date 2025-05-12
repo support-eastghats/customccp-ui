@@ -14,6 +14,7 @@ export default function CCPContainer({ setAgent, setApiKey }) {
   const [successMessage, setSuccessMessage] = useState("");
   const [loading, setLoading] = useState(false);
   const [agentName, setAgentName] = useState("");
+  const [agentId, setAgentId] = useState("");
   const [currentProfileName, setCurrentProfileName] = useState("");
 
   useEffect(() => {
@@ -42,12 +43,21 @@ export default function CCPContainer({ setAgent, setApiKey }) {
           setApiKey(finalKey);
           localStorage.setItem("connectApiKey", finalKey);
 
+          // ✅ Get routing profile immediately
           const profile = agent.getRoutingProfile();
           setCurrentProfileName(profile?.name || "Unavailable");
 
-          console.log("✅ Agent initialized:", agent.getName());
-          console.log("🎯 Routing Profile:", profile?.name);
-          console.log("🔐 API Key set from .env:", finalKey);
+          // ✅ Try to get agent ID now
+          const id = agent.getAgentId();
+          if (id) {
+            setAgentId(id);
+          } else {
+            // ⏳ Fallback in case config isn't fully loaded
+            agent.onRefresh(() => {
+              const refreshedId = agent.getAgentId();
+              setAgentId(refreshedId || "Unavailable");
+            });
+          }
 
           window.connect.contact(contact => {
             setContact(contact);
@@ -197,6 +207,10 @@ export default function CCPContainer({ setAgent, setApiKey }) {
       <h3 style={{ marginBottom: "0.5rem", color: "#333" }}>
         👤 Agent: {agentName || "Detecting..."}
       </h3>
+
+      <p style={{ marginBottom: "0.25rem", fontWeight: 500 }}>
+        🆔 User ID: {agentId || "Loading..."}
+      </p>
 
       <p style={{ marginBottom: "1rem", fontWeight: 500 }}>
         🎯 Current Routing Profile: {currentProfileName || "Loading..."}
