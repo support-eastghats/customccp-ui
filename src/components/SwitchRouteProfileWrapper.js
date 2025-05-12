@@ -16,8 +16,14 @@ export default function SwitchRouteProfileWrapper({ agent, apiKey }) {
     setLoading(true);
     setError("");
     try {
+      if (typeof agent?.getUsername !== "function") {
+        setError("Agent not ready.");
+        setLoading(false);
+        return;
+      }
+  
       const userId = agent.getUsername();
-
+  
       const res = await axios.post(
         `${apiBase}/getAvailableRoutingProfiles`,
         { userId, instanceId },
@@ -28,7 +34,7 @@ export default function SwitchRouteProfileWrapper({ agent, apiKey }) {
           }
         }
       );
-
+  
       setAvailableProfiles(res.data.allowedProfiles || []);
       setShowForm(true);
     } catch (err) {
@@ -38,7 +44,7 @@ export default function SwitchRouteProfileWrapper({ agent, apiKey }) {
       setLoading(false);
     }
   };
-
+  
   if (!agent || !apiKey) {
     return (
       <div className="profile-wrapper">

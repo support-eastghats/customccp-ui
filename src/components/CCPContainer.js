@@ -4,6 +4,7 @@ import "./CCPContainer.css";
 
 export default function CCPContainer({ setAgent, setApiKey }) {
   const containerRef = useRef(null);
+  const [agentId, setAgentId] = useState("");
   const [contact, setContact] = useState(null);
   const [mainDisplay, setMainDisplay] = useState("");
   const [isDisabled, setIsDisabled] = useState(true);
@@ -36,6 +37,7 @@ export default function CCPContainer({ setAgent, setApiKey }) {
         window.connect.agent(agent => {
           setAgent(agent);
           setAgentName(agent.getName());
+          setAgentId(agent.getConfiguration()?.agentId || "Unknown");
           window.ccpAgent = agent;
 
           const finalKey = process.env.REACT_APP_APIKEY;
@@ -200,6 +202,10 @@ export default function CCPContainer({ setAgent, setApiKey }) {
 
       <p style={{ marginBottom: "1rem", fontWeight: 500 }}>
         🎯 Current Routing Profile: {currentProfileName || "Loading..."}
+      </p>
+
+      <p style={{ marginBottom: "0.25rem", fontWeight: 500 }}>
+        🆔 User ID: {agentId || "Loading..."}
       </p>
 
       <div className="ccp-buttons">
