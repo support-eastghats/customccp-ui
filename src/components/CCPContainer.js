@@ -88,7 +88,6 @@ export default function CCPContainer() {
     const instanceId = getInstanceId();
     const contactId = contact?.getContactId();
     const key = apiKey || localStorage.getItem("connectApiKey");
-    console.log("📤 Using API Key for setpauseresumeattr:", key);
 
     if (key && pauseTimestamps.length && resumeTimestamps.length && contactId && instanceId) {
       try {
