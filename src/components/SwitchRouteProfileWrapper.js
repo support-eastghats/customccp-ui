@@ -1,9 +1,10 @@
+// SwitchRouteProfileWrapper.js
 import { useState } from "react";
 import axios from "axios";
 import SwitchRouteProfileSection from "./SwitchRouteProfileSection";
 import "./SwitchRouteProfileWrapper.css";
 
-export default function SwitchRouteProfileWrapper({ agent, apiKey, onProfileSwitched, isCallActive }) {
+export default function SwitchRouteProfileWrapper({ agent, apiKey, isCallActive, onProfileSwitched }) {
   const [availableProfiles, setAvailableProfiles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -31,15 +32,15 @@ export default function SwitchRouteProfileWrapper({ agent, apiKey, onProfileSwit
         {
           headers: {
             "Content-Type": "application/json",
-            "x-api-key": apiKey,
-          },
+            "x-api-key": apiKey
+          }
         }
       );
 
       const profiles = res.data.allowedProfiles || [];
 
       if (profiles.length === 0) {
-        setError(res.data.message || "You don't have route profile listed to switch.");
+        setError(res.data.message || "No routing profiles available.");
       } else {
         setAvailableProfiles(profiles);
         setShowForm(true);
@@ -67,7 +68,7 @@ export default function SwitchRouteProfileWrapper({ agent, apiKey, onProfileSwit
         <button
           className="switch-toggle"
           onClick={fetchProfiles}
-          disabled={loading || isCallActive}
+          disabled={loading || isCallActive} // 🔒 Disable during call
         >
           {loading ? "Loading..." : "Switch Routing Profile"}
         </button>
@@ -77,8 +78,11 @@ export default function SwitchRouteProfileWrapper({ agent, apiKey, onProfileSwit
           apiKey={apiKey}
           availableProfiles={availableProfiles}
           onClose={() => setShowForm(false)}
-          onProfileSwitched={onProfileSwitched}
-          isCallActive={isCallActive}
+          onProfileSwitched={() => {
+            setShowForm(false);
+            onProfileSwitched();
+          }}
+          isCallActive={isCallActive} // 🔒 Propagate to inner section
         />
       )}
 

@@ -1,9 +1,13 @@
-// CCPContainer.js
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import "./CCPContainer.css";
 
-export default function CCPContainer({ setAgent, setApiKey, profileRefreshTrigger }) {
+export default function CCPContainer({
+  setAgent,
+  setApiKey,
+  profileRefreshTrigger,
+  setIsCallActive
+}) {
   const containerRef = useRef(null);
   const [contact, setContact] = useState(null);
   const [mainDisplay, setMainDisplay] = useState("");
@@ -62,12 +66,12 @@ export default function CCPContainer({ setAgent, setApiKey, profileRefreshTrigge
             setContact(contact);
 
             contact.onConnected(() => {
-              const attr = contact.getAttributes();
               const queue = contact.getQueue();
               setMainDisplay(queue?.name || "");
 
               setIsDisabled(false);
               setIsResumeDisabled(true);
+              setIsCallActive?.(true);
               setErrorMessage("");
               setSuccessMessage("");
             });
@@ -98,6 +102,7 @@ export default function CCPContainer({ setAgent, setApiKey, profileRefreshTrigge
               }
 
               resetState();
+              setIsCallActive?.(false);
             });
           });
         });
