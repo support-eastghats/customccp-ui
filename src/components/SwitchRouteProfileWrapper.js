@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import axios from "axios";
 import SwitchRouteProfileSection from "./SwitchRouteProfileSection";
 import "./SwitchRouteProfileWrapper.css";
 
-export default function SwitchRouteProfileWrapper({ agent, apiKey, onProfileSwitched, isInCall }) {
+export default function SwitchRouteProfileWrapper({ agent, apiKey, onProfileSwitched, isCallActive }) {
   const [availableProfiles, setAvailableProfiles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -13,7 +13,6 @@ export default function SwitchRouteProfileWrapper({ agent, apiKey, onProfileSwit
   const instanceId = process.env.REACT_APP_CONNECT_INSTANCE_ID;
 
   const fetchProfiles = async () => {
-    if (isInCall) return; // Prevent fetch while on call
     setLoading(true);
     setError("");
     try {
@@ -32,15 +31,15 @@ export default function SwitchRouteProfileWrapper({ agent, apiKey, onProfileSwit
         {
           headers: {
             "Content-Type": "application/json",
-            "x-api-key": apiKey
-          }
+            "x-api-key": apiKey,
+          },
         }
       );
 
       const profiles = res.data.allowedProfiles || [];
 
       if (profiles.length === 0) {
-        setError(res.data.message || "No routing profiles available.");
+        setError(res.data.message || "You don't have route profile listed to switch.");
       } else {
         setAvailableProfiles(profiles);
         setShowForm(true);
@@ -52,13 +51,6 @@ export default function SwitchRouteProfileWrapper({ agent, apiKey, onProfileSwit
       setLoading(false);
     }
   };
-
-  useEffect(() => {
-    if (isInCall && showForm) {
-      setShowForm(false);
-      setAvailableProfiles([]);
-    }
-  }, [isInCall]);
 
   if (!agent || !apiKey) {
     return (
@@ -75,7 +67,7 @@ export default function SwitchRouteProfileWrapper({ agent, apiKey, onProfileSwit
         <button
           className="switch-toggle"
           onClick={fetchProfiles}
-          disabled={loading || isInCall}
+          disabled={loading || isCallActive}
         >
           {loading ? "Loading..." : "Switch Routing Profile"}
         </button>
@@ -85,12 +77,8 @@ export default function SwitchRouteProfileWrapper({ agent, apiKey, onProfileSwit
           apiKey={apiKey}
           availableProfiles={availableProfiles}
           onClose={() => setShowForm(false)}
-          onProfileSwitched={() => {
-            setShowForm(false);
-            setAvailableProfiles([]);
-            if (onProfileSwitched) onProfileSwitched();
-          }}
-          isInCall={isInCall}
+          onProfileSwitched={onProfileSwitched}
+          isCallActive={isCallActive}
         />
       )}
 

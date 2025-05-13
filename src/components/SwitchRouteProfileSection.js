@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import axios from "axios";
 import "./SwitchRouteProfileSection.css";
 
@@ -7,37 +7,19 @@ export default function SwitchRouteProfileSection({
   apiKey,
   availableProfiles,
   onClose,
-  onProfileSwitched
+  onProfileSwitched,
+  isCallActive = false,
 }) {
   const [selectedProfileId, setSelectedProfileId] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
-  const [inCall, setInCall] = useState(false);
 
   const instanceId = process.env.REACT_APP_CONNECT_INSTANCE_ID;
   const apiBase = process.env.REACT_APP_DISPURL;
 
-  useEffect(() => {
-    if (!agent) return;
-
-    const unsubscribe = window.connect.contact((contact) => {
-      contact.onConnected(() => {
-        setInCall(true);
-        setMessage("⚠️ Cannot switch while on call.");
-      });
-      contact.onEnded(() => {
-        setInCall(false);
-        setMessage("");
-      });
-    });
-
-    return () => {
-      if (unsubscribe) unsubscribe();
-    };
-  }, [agent]);
-
   const handleSwitch = async () => {
     if (!selectedProfileId) return;
+
     setLoading(true);
     setMessage("⏳ Switching...");
 
@@ -54,28 +36,24 @@ export default function SwitchRouteProfileSection({
       const payload = {
         userId,
         instanceId,
-        routingProfileId: selectedProfileId
+        routingProfileId: selectedProfileId,
       };
 
       await axios.post(`${apiBase}/switchRoutingProfile`, payload, {
         headers: {
           "Content-Type": "application/json",
-          "x-api-key": apiKey
-        }
+          "x-api-key": apiKey,
+        },
       });
 
       setMessage("✅ Routing profile switched successfully.");
 
-      // Update CCPContainer's profile name
-      if (typeof onProfileSwitched === "function") {
-        onProfileSwitched();
+      if (onProfileSwitched) {
+        onProfileSwitched(); // Update UI with new profile
       }
 
-      // Collapse back to button view after a short delay
       setTimeout(() => {
-        setSelectedProfileId("");
-        setMessage("");
-        onClose();
+        onClose(); // Hide form
       }, 1500);
     } catch (err) {
       console.error("Switch failed:", err);
@@ -91,7 +69,7 @@ export default function SwitchRouteProfileSection({
         className="switch-dropdown"
         value={selectedProfileId}
         onChange={(e) => setSelectedProfileId(e.target.value)}
-        disabled={loading || inCall}
+        disabled={loading || isCallActive}
       >
         <option value="">-- Select Routing Profile --</option>
         {availableProfiles.map((profile) => (
@@ -103,13 +81,19 @@ export default function SwitchRouteProfileSection({
 
       <div style={{ display: "flex", gap: "1rem", marginTop: "1rem" }}>
         <button
+          type="button"
           className="switch-submit"
           onClick={handleSwitch}
-          disabled={!selectedProfileId || loading || inCall}
+          disabled={!selectedProfileId || loading || isCallActive}
         >
           {loading ? "Switching..." : "Change"}
         </button>
-        <button className="switch-toggle" onClick={onClose} disabled={loading || inCall}>
+        <button
+          type="button"
+          className="switch-toggle"
+          onClick={onClose}
+          disabled={loading || isCallActive}
+        >
           Cancel
         </button>
       </div>
