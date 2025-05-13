@@ -2,7 +2,13 @@ import { useState } from "react";
 import axios from "axios";
 import "./SwitchRouteProfileSection.css";
 
-export default function SwitchRouteProfileSection({ agent, apiKey, availableProfiles, onClose }) {
+export default function SwitchRouteProfileSection({
+  agent,
+  apiKey,
+  availableProfiles,
+  onClose,
+  onProfileSwitched,
+}) {
   const [selectedProfileId, setSelectedProfileId] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -28,17 +34,20 @@ export default function SwitchRouteProfileSection({ agent, apiKey, availableProf
       const payload = {
         userId,
         instanceId,
-        routingProfileId: selectedProfileId
+        routingProfileId: selectedProfileId,
       };
 
       await axios.post(`${apiBase}/switchRoutingProfile`, payload, {
         headers: {
           "Content-Type": "application/json",
-          "x-api-key": apiKey
-        }
+          "x-api-key": apiKey,
+        },
       });
 
       setMessage("✅ Routing profile switched successfully.");
+      if (onProfileSwitched) {
+        onProfileSwitched(); // 👉 triggers refresh in CCPContainer
+      }
     } catch (err) {
       console.error("Switch failed:", err);
       setMessage("❌ Failed to switch routing profile.");

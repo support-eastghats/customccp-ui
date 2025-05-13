@@ -3,7 +3,7 @@ import axios from "axios";
 import SwitchRouteProfileSection from "./SwitchRouteProfileSection";
 import "./SwitchRouteProfileWrapper.css";
 
-export default function SwitchRouteProfileWrapper({ agent, apiKey }) {
+export default function SwitchRouteProfileWrapper({ agent, apiKey, onProfileSwitched }) {
   const [availableProfiles, setAvailableProfiles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -71,6 +71,7 @@ export default function SwitchRouteProfileWrapper({ agent, apiKey }) {
           apiKey={apiKey}
           availableProfiles={availableProfiles}
           onClose={() => setShowForm(false)}
+          onProfileSwitched={onProfileSwitched}
         />
       )}
 

@@ -1,8 +1,9 @@
+// CCPContainer.js
 import { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import "./CCPContainer.css";
 
-export default function CCPContainer({ setAgent, setApiKey }) {
+export default function CCPContainer({ setAgent, setApiKey, profileRefreshTrigger }) {
   const containerRef = useRef(null);
   const [contact, setContact] = useState(null);
   const [mainDisplay, setMainDisplay] = useState("");
@@ -16,6 +17,13 @@ export default function CCPContainer({ setAgent, setApiKey }) {
   const [agentName, setAgentName] = useState("");
   const [agentId, setAgentId] = useState("");
   const [currentProfileName, setCurrentProfileName] = useState("");
+
+  useEffect(() => {
+    if (window.ccpAgent) {
+      const profile = window.ccpAgent.getRoutingProfile();
+      setCurrentProfileName(profile?.name || "Unavailable");
+    }
+  }, [profileRefreshTrigger]);
 
   useEffect(() => {
     const script = document.createElement("script");
@@ -39,9 +47,8 @@ export default function CCPContainer({ setAgent, setApiKey }) {
           setAgentName(agent.getName());
           window.ccpAgent = agent;
 
-          // ✅ Get Agent ID from ARN
           const fullArn = agent.getAgentARN();
-          const id = fullArn?.split("/").pop(); // Last segment of ARN
+          const id = fullArn?.split("/").pop();
           setAgentId(id || "Unavailable");
 
           const finalKey = process.env.REACT_APP_APIKEY;
@@ -51,11 +58,6 @@ export default function CCPContainer({ setAgent, setApiKey }) {
           const profile = agent.getRoutingProfile();
           setCurrentProfileName(profile?.name || "Unavailable");
 
-          console.log("✅ Agent:", agent.getName());
-          console.log("🆔 Agent ID:", id);
-          console.log("🎯 Routing Profile:", profile?.name);
-          console.log("🔐 API Key:", finalKey);
-
           window.connect.contact(contact => {
             setContact(contact);
 
@@ -63,8 +65,6 @@ export default function CCPContainer({ setAgent, setApiKey }) {
               const attr = contact.getAttributes();
               const queue = contact.getQueue();
               setMainDisplay(queue?.name || "");
-
-              console.log("📞 Contact connected. Attributes:", attr);
 
               setIsDisabled(false);
               setIsResumeDisabled(true);
