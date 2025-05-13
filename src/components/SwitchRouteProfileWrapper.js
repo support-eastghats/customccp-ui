@@ -36,8 +36,14 @@ export default function SwitchRouteProfileWrapper({ agent, apiKey, onProfileSwit
         }
       );
 
-      setAvailableProfiles(res.data.allowedProfiles || []);
-      setShowForm(true);
+      const profiles = res.data.allowedProfiles || [];
+
+      if (profiles.length === 0) {
+        setError(res.data.message || "You don't have route profile listed to switch.");
+      } else {
+        setAvailableProfiles(profiles);
+        setShowForm(true);
+      }
     } catch (err) {
       console.error("Failed to fetch routing profiles:", err);
       setError("❌ Could not fetch routing profiles.");
@@ -57,15 +63,16 @@ export default function SwitchRouteProfileWrapper({ agent, apiKey, onProfileSwit
 
   return (
     <div className="profile-wrapper">
-      {!showForm ? (
+      {!showForm && !error && (
         <button
           className="switch-toggle"
           onClick={fetchProfiles}
-          disabled={loading}
+          disabled={loading || agent?.isOnCall?.()}
         >
           {loading ? "Loading..." : "Switch Routing Profile"}
         </button>
-      ) : (
+      )}
+      {showForm && (
         <SwitchRouteProfileSection
           agent={agent}
           apiKey={apiKey}
@@ -74,7 +81,6 @@ export default function SwitchRouteProfileWrapper({ agent, apiKey, onProfileSwit
           onProfileSwitched={onProfileSwitched}
         />
       )}
-
       {error && <p className="switch-message">{error}</p>}
     </div>
   );
