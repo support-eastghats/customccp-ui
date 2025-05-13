@@ -16,8 +16,17 @@ export default function SwitchRouteProfileSection({ agent, apiKey, availableProf
     setMessage("⏳ Switching...");
 
     try {
+      const fullArn = agent?.getAgentARN?.();
+      const userId = fullArn?.split("/").pop();
+
+      if (!userId) {
+        setMessage("❌ Unable to get Agent ID.");
+        setLoading(false);
+        return;
+      }
+
       const payload = {
-        userId: agent.getUsername(),
+        userId,
         instanceId,
         routingProfileId: selectedProfileId
       };
