@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import SwitchRouteProfileSection from "./SwitchRouteProfileSection";
 import "./SwitchRouteProfileWrapper.css";
 
-export default function SwitchRouteProfileWrapper({ agent, apiKey, onProfileSwitched }) {
+export default function SwitchRouteProfileWrapper({ agent, apiKey, onProfileSwitched, isInCall }) {
   const [availableProfiles, setAvailableProfiles] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -13,6 +13,7 @@ export default function SwitchRouteProfileWrapper({ agent, apiKey, onProfileSwit
   const instanceId = process.env.REACT_APP_CONNECT_INSTANCE_ID;
 
   const fetchProfiles = async () => {
+    if (isInCall) return; // Prevent fetch while on call
     setLoading(true);
     setError("");
     try {
@@ -39,7 +40,7 @@ export default function SwitchRouteProfileWrapper({ agent, apiKey, onProfileSwit
       const profiles = res.data.allowedProfiles || [];
 
       if (profiles.length === 0) {
-        setError(res.data.message || "You don't have route profile listed to switch.");
+        setError(res.data.message || "No routing profiles available.");
       } else {
         setAvailableProfiles(profiles);
         setShowForm(true);
@@ -52,6 +53,13 @@ export default function SwitchRouteProfileWrapper({ agent, apiKey, onProfileSwit
     }
   };
 
+  useEffect(() => {
+    if (isInCall && showForm) {
+      setShowForm(false);
+      setAvailableProfiles([]);
+    }
+  }, [isInCall]);
+
   if (!agent || !apiKey) {
     return (
       <div className="profile-wrapper">
@@ -63,24 +71,29 @@ export default function SwitchRouteProfileWrapper({ agent, apiKey, onProfileSwit
 
   return (
     <div className="profile-wrapper">
-      {!showForm && !error && (
+      {!showForm ? (
         <button
           className="switch-toggle"
           onClick={fetchProfiles}
-          disabled={loading || agent?.isOnCall?.()}
+          disabled={loading || isInCall}
         >
           {loading ? "Loading..." : "Switch Routing Profile"}
         </button>
-      )}
-      {showForm && (
+      ) : (
         <SwitchRouteProfileSection
           agent={agent}
           apiKey={apiKey}
           availableProfiles={availableProfiles}
           onClose={() => setShowForm(false)}
-          onProfileSwitched={onProfileSwitched}
+          onProfileSwitched={() => {
+            setShowForm(false);
+            setAvailableProfiles([]);
+            if (onProfileSwitched) onProfileSwitched();
+          }}
+          isInCall={isInCall}
         />
       )}
+
       {error && <p className="switch-message">{error}</p>}
     </div>
   );
