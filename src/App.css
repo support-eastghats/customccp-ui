@@ -1,0 +1,319 @@
+.ccpContainer {
+  height: 100%;
+  width: 100%;
+  min-height: 500px;
+  min-width: 100px;
+}
+
+
+.ccpContainerInner {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  font-family: sans-serif;
+}
+
+.inputDisplayDiv {
+  height: 5%;
+  margin: 0;
+  border: 0;
+  display: flex;
+}
+
+.maindisplay {
+  height: 100%;
+  width:40%;
+  margin: 0;
+  border: 0;
+  background-color: rgb(242, 242, 242);
+  font-size: 25px;
+  font-weight: bold;
+  text-align: center; 
+  flex: 2 
+}
+
+.pauseresumebtn {
+  height: 100%;
+  width:20%;
+  margin: 0;
+  border: 0;
+  background-color: rgb(242, 242, 242);
+  font-size: 18px;
+  font-weight: bold;
+  text-align: center; 
+  flex: 2 
+}
+
+.routeProfileBar {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  height: 48px;
+  padding: 0 16px;
+  background-color: #f4f4f4;
+  border-bottom: 1px solid #ccc;
+}
+
+
+.ccpElement {
+  flex-grow: 1;
+  min-height: 500px;
+  border-bottom: 1px solid #ccc;
+}
+
+.pauseResumeBar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  padding: 10px;
+  gap: 10px;
+  background-color: #fafafa;
+  border-top: 1px solid #ccc;
+}
+
+
+.ccpElementClosed {
+  display: none;
+}
+
+.sidepanelOpen {
+  width: 250px;
+}
+
+.sidepanelClosed {
+  width: 0;
+}
+
+.sidepanel  {
+  position: fixed;
+  z-index: 1;
+  height: 320px;
+  top: 0;
+  left: 0;
+  background-color: #111;
+  overflow-x: hidden;
+  transition: 0.5s;
+  padding-top: 60px;
+}
+
+.sidepanel button,.sidepanelClosed button {
+  padding: 8px 8px 8px 32px;
+  background-color: #111;
+  text-decoration: none;
+  font-size: 25px;
+  color: #818181;
+  display: block;
+  transition: 0.3s;
+  border: none;
+  outline: none;
+}
+
+.closebtn:hover {
+  color: #f1f1f1;
+  border: none;
+}
+
+.sidepanel .closebtn, .sidepanelClosed .closebtn {
+  position: absolute;
+  top: 0;
+  right: 25px;
+  font-size: 36px;
+
+}
+
+.openbtn {
+  font-size:medium;
+  cursor: pointer;
+  background-color: #111;
+  color: white;
+  border: none;
+  height: 100%;
+  width: 40px;
+  text-align: center;
+}
+
+.btn-group .button {
+  background-color: #4CAF50; /* Green */
+  border: 1px solid green;
+  color: white;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  font-size: 16px;
+  cursor: pointer;
+  width: 250px;
+  margin: 8px 0;
+  display: block;
+}
+
+.btn-group .button:not(:last-child) {
+  border-bottom: none; /* Prevent double borders */
+}
+
+.btn-group .button:hover {
+  background-color: #3e8e41;
+}
+
+label {
+  color: #f1f1f1;
+  white-space: nowrap;
+  width: 100%;
+  padding: 5px 5px;
+  margin: 8px 0;
+  box-sizing: border-box;  
+}
+
+.btn-group input {
+  width: 100%;
+  padding: 10px 20px;
+  margin: 8px 0;
+  box-sizing: border-box;
+}
+
+.selectbox {
+  width: auto;
+  height: 100%;
+  border: 1px solid #999;
+  font-size: 18px;
+  border-radius: 5px;
+  padding:0px 10px 0px 5px
+}
+
+.selectbtn {
+  font-size:medium;
+  cursor: pointer;
+  background-color: #111;
+  color: white;
+  border: none;
+  height: 100%;
+  width: auto;
+  text-align: center;
+}
+
+.dispcodesdropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dispcodesdropbtn {
+  font-size:medium;
+  cursor: pointer;
+  background-color: #111;;
+  color: white;
+  padding: 16px;
+  font-size: 16px;
+  border: none;
+  height: 100%;
+  width: auto;
+  text-align: center;
+}
+
+.dispcodesdropdown-content {
+  display: none;
+  position: absolute;
+  right: 0;
+  background-color: #f1f1f1;
+  min-width: 160px;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 1;
+  max-height:calc(100vh - 300px);
+  overflow-y: scroll;
+  width: auto;
+}
+
+.dispcodesdropdown-content p {
+  color: black;
+  padding: 10px 10px;
+  text-decoration: none;
+  display: block;
+  height: 100%;
+  margin: 0%;
+  white-space: nowrap;
+}
+
+.dispcodesdropdown-content1color {
+  background-color: white;
+}
+
+.dispcodesdropdown-content1color:hover {
+  background-color: rgb(73, 74, 77);
+  color: white;
+}
+
+.dispcodesdropdown-content2color {
+  background-color: rgb(173, 175, 179);
+}
+
+.dispcodesdropdown-content2color:hover {
+  background-color: #111;
+  color: white;
+}
+
+.dispcodesdropdown:hover .dispcodesdropdown-content {display: block;}
+
+.dispcodesdropdown:hover .dispcodesdropbtn {background-color: rgb(73, 74, 77);}
+
+
+.btnpause {
+  width: 150px;
+  height: auto;
+  padding: 3px;
+  margin: 2px 2px;
+  position: relative;
+  display: inline-block;
+  font-size: 13px;
+  font-weight: bold;
+  line-height: 20px;
+  color: #333;
+  white-space: nowrap;
+  vertical-align: middle;
+  cursor: pointer;
+  background-color: rgb(211, 102, 12);
+  background-image: rgb(156, 100, 15);
+  border: 1px solid #d5d5d5;
+  border-radius: 5px;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-appearance: none;
+  
+}
+
+.btnresume {
+  width: 150px;
+  height: auto;
+  padding: 3px;
+  margin: 2px 2px;
+  position: relative;
+  display: inline-block;
+  font-size: 13px;
+  font-weight: bold;
+  line-height: 20px;
+  color: #333;
+  white-space: nowrap;
+  vertical-align: middle;
+  cursor: pointer;
+  background-color: rgb(92, 211, 12);
+  background-image: rgb(156, 100, 15);
+  border: 1px solid #d5d5d5;
+  border-radius: 5px;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-appearance: none;
+}
+
+.routeprofile-dropdown {
+  padding: 6px 12px;
+  font-size: 14px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  background-color: white;
+  cursor: pointer;
+  height: 36px;
+  width: auto;
+}
+

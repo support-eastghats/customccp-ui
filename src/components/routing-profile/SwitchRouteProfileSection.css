@@ -1,0 +1,60 @@
+.switch-form {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  flex-wrap: wrap;
+  background-color: #f7f9fa;
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+
+.switch-dropdown {
+  padding: 6px 10px;
+  font-size: 14px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  min-width: 220px;
+  background-color: #fff;
+}
+
+.switch-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.switch-submit {
+  background-color: #28a745;
+  color: white;
+  padding: 6px 14px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.switch-submit:hover {
+  background-color: #218838;
+}
+
+.switch-cancel {
+  background-color: #dc3545;
+  color: white;
+  padding: 6px 14px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+}
+
+.switch-cancel:hover {
+  background-color: #c82333;
+}
+
+.switch-message {
+  margin-left: 10px;
+  font-size: 13px;
+  color: #555;
+  white-space: nowrap;
+}
