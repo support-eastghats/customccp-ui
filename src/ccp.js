@@ -232,7 +232,8 @@ class CCP extends Component {
                     'DAB Retail Agent - PauseResume',
                     'SBG SG SE Other Queries',
                     'SBG SG SE Reactivations',
-                    'Project1-Sales-Level1'
+                    'Project1-Sales-Level1',
+                    'Project1-Sales-Level2'
                   ];
                 
                   // Conditional visibility
