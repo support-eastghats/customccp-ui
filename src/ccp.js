@@ -500,16 +500,12 @@ class CCP extends Component {
         return;
       }
 
-      const headers = {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey
-      };
+      const url = `${process.env.REACT_APP_DISPURL}/getdispcodelist/${encodeURIComponent(dispCodesListName)}?` +
+                  new URLSearchParams({ 'x-api-key': apiKey }).toString();
 
       try {
-        const url = `${process.env.REACT_APP_DISPURL}/getdispcodelist/${encodeURIComponent(dispCodesListName)}`;
-        const res = await axios.get(url, { headers });
+        const res = await axios.get(url); // no headers => no OPTIONS preflight
         console.log('getDispCodeList res', res);
-
         if (res?.data?.Item) {
           this.setState({ dispCodesList: res.data.Item });
         }
