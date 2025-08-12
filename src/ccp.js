@@ -164,10 +164,9 @@ class CCP extends Component {
                 let attributeMap = contact.getAttributes();
                 this.updateMainDisplay(queue, attributeMap);
 
-                if (attributeMap.dispCodeList && attributeMap.ccpApiKey && !this.state.dispCodesList) {
-                    this.setState({ dispCodesTimestamp: new Date() })
-                    console.log('onConnecting getDispCodeList', this.state.dispCodesList)
-                    await this.getDispCodesList(attributeMap.ccpApiKey.value, attributeMap.dispCodeList.value);
+                if (attributeMap.dispCodeList && !this.state.dispCodesList) {
+                   this.setState({ dispCodesTimestamp: new Date() });
+                   await this.getDispCodesList(attributeMap.dispCodeList.value);
                 }
 
                 //logic added for pause resume flow :
@@ -189,9 +188,9 @@ class CCP extends Component {
                 let attributeMap = contact.getAttributes();
                 this.updateMainDisplay(queue, attributeMap);
 
-                if (attributeMap.dispCodeList && attributeMap.ccpApiKey && !this.state.dispCodesList && !this.state.dispCodesTimestamp) {
-                    console.log('onRefresh getDispCodeList', this.state.dispCodesList)
-                    await this.getDispCodesList(attributeMap.ccpApiKey.value, attributeMap.dispCodeList.value);
+                if (attributeMap.dispCodeList && !this.state.dispCodesList && !this.state.dispCodesTimestamp) {
+                  console.log('onRefresh getDispCodeList', this.state.dispCodesList);
+                  await this.getDispCodesList(attributeMap.dispCodeList.value);
                 }
 
                 let dispCodeSelected = [];
@@ -492,33 +491,33 @@ class CCP extends Component {
       };            
 
 
-    getDispCodesList = async (ccpApiKey, dispCodesListName) => {
-        console.log('getDispCodeList', dispCodesListName);
-        let tmpApiKey = process.env.REACT_APP_APIKEY && process.env.REACT_APP_APIKEY.length === 20 ? process.env.REACT_APP_APIKEY : null;
-        let apiKey = tmpApiKey ? tmpApiKey.slice(0, 10) + ccpApiKey.slice(10, -10) + tmpApiKey.slice(-10) : null;
-        if (apiKey) {
-            const headers = {
-                'Content-Type': 'application/json',
-                'x-api-key': apiKey//'7KFWWEN96G1iunOcICpT56UVtH1Mbcty65B0Mbbj'
-            }
-            let res;
-            try {
-                res = await axios.get(`${process.env.REACT_APP_DISPURL}/getdispcodelist/${dispCodesListName}`, { headers })
-            } catch (error) {
-                console.log(error);
-            }
-            console.log('getDispCodeList res', res);
-            if (res && res.data && res.data.Item) {
-                this.setState({ dispCodesList: res.data.Item });
-                console.log('getDispCodesList state', this.state);
-                console.log("Setting final ccpApiKey in state:", apiKey);
-                this.setState({ ccpApiKey: apiKey }, () => {
-                    // console.log("Final ccpApiKey in state (post setState):", this.state.ccpApiKey);
-                });;
-            }
-        }
+    getDispCodesList = async (dispCodesListName) => {
+      console.log('getDispCodeList', dispCodesListName);
 
-    }
+      const apiKey = this.state.ccpApiKey || process.env.REACT_APP_APIKEY;
+      if (!apiKey) {
+        console.warn('No API key available for getDispCodesList');
+        return;
+      }
+
+      const headers = {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey
+      };
+
+      try {
+        const url = `${process.env.REACT_APP_DISPURL}/getdispcodelist/${encodeURIComponent(dispCodesListName)}`;
+        const res = await axios.get(url, { headers });
+        console.log('getDispCodeList res', res);
+
+        if (res?.data?.Item) {
+          this.setState({ dispCodesList: res.data.Item });
+        }
+      } catch (error) {
+        console.log('getDispCodesList error', error?.response?.data || error.message);
+      }
+    };
+
 
     setDispCode = async (dispCodeName, dispCodeVal, instanceId, contactId) => {
         let res;
@@ -563,22 +562,35 @@ class CCP extends Component {
       
 
     handleDispCodesSelectChange = async (e) => {
-        console.log('handleDispCodesSelectChange');
+      console.log('handleDispCodesSelectChange');
 
-        if (!this.state.dispCodeSelected || this.state.dispCodeSelected.indexOf(e.target.innerText) === -1) {
-            let contactId = this.state.contact ? this.state.contact.getContactId() : null;
-            let agentRoutingProfile = this.state.agent ? this.state.agent.getRoutingProfile() : null;
-            let rpArnArr = agentRoutingProfile && agentRoutingProfile.routingProfileARN ? agentRoutingProfile.routingProfileARN.split('/') : null;
-            let instanceId = rpArnArr && Array.isArray(rpArnArr) && rpArnArr.length === 4 ? rpArnArr[1] : null;
-            try {
-                let res = await this.setDispCode(e.target.id, e.target.innerText, instanceId, contactId);
-                console.log('handleDispCodesSelectChange res', res);
+      // always use the element you bound the handler to
+      const el  = e.currentTarget;
+      const name = el.dataset.codeName || el.id;
+      const val  = el.dataset.codeVal  || el.innerText;
 
-            } catch (error) {
-                console.log('handleDispCodesSelectChange error', error);
-            }
-        }
-    }
+      if (!name || !val) {
+        console.warn('Disposition click missing name/val', { name, val });
+        return;
+      }
+
+      // avoid duplicate PUTs
+      if (this.state.dispCodeSelected && this.state.dispCodeSelected.includes(val)) {
+        console.log('Disposition already selected:', val);
+        return;
+      }
+
+      const contactId = this.state.contact?.getContactId?.() || null;
+      const rpArnArr  = this.state.agent?.getRoutingProfile?.().routingProfileARN?.split('/') || [];
+      const instanceId = rpArnArr.length === 4 ? rpArnArr[1] : null;
+
+      try {
+        const res = await this.setDispCode(name, val, instanceId, contactId);
+        console.log('handleDispCodesSelectChange res', res);
+      } catch (error) {
+        console.log('handleDispCodesSelectChange error', error);
+      }
+    };
 
     handlePauseButtonChangeColor = (newColor) => {
         if (this.state.ismessageDisplay === false) {
