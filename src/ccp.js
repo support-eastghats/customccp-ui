@@ -8,6 +8,10 @@ import axios from 'axios';
 import './App.css';
 import SwitchRouteProfileWrapper from './components/routing-profile/SwitchRouteProfileWrapper';
 
+const maskKey = k => (k && k.length > 8) ? `${k.slice(0,4)}••••${k.slice(-4)}` : '****';
+const devLog = (...args) => { if (process.env.NODE_ENV !== 'production') console.log(...args); };
+
+
 class CCP extends Component {
     constructor(props) {
         super(props);
@@ -171,10 +175,7 @@ class CCP extends Component {
 
                 //logic added for pause resume flow :
                 const apiKey = process.env.REACT_APP_APIKEY;
-                console.warn("🔧 [Dev Override] Using raw API key:", apiKey);
-
-                console.log("Connected: constructed ccpApiKey", apiKey);
-                console.log("Setting final ccpApiKey in state:", apiKey);
+                devLog("[CCP] API key set:", maskKey(apiKey));
                 this.setState({ ccpApiKey: apiKey }, () => {
                     // console.log("Final ccpApiKey in state (post setState):", this.state.ccpApiKey);
                 });;
@@ -284,6 +285,7 @@ class CCP extends Component {
               
                 // Ensure state updates are fully applied before calling the API
                 this.setState({
+                  contact: null,
                   mainDisplay: "",
                   isDisabled: true,
                   isResumeDisabled: true,
@@ -336,6 +338,7 @@ class CCP extends Component {
                 }                
               
                 this.setState({
+                  contact: null,
                   dispCodesList: null,
                   dispCodeSelected: null,
                   currentContactId: null,
