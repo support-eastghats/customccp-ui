@@ -491,28 +491,23 @@ class CCP extends Component {
       };            
 
 
-    getDispCodesList = async (dispCodesListName) => {
-      console.log('getDispCodeList', dispCodesListName);
-
+    getDispCodesList = async (listName) => {
       const apiKey = this.state.ccpApiKey || process.env.REACT_APP_APIKEY;
-      if (!apiKey) {
-        console.warn('No API key available for getDispCodesList');
-        return;
-      }
+      if (!apiKey) return;
 
-      const url = `${process.env.REACT_APP_DISPURL}/getdispcodelist/${encodeURIComponent(dispCodesListName)}?` +
-                  new URLSearchParams({ 'x-api-key': apiKey }).toString();
+      const url = `${process.env.REACT_APP_DISPURL}/getdispcodelist?name=${encodeURIComponent(listName)}`;
 
       try {
-        const res = await axios.get(url); // no headers => no OPTIONS preflight
-        console.log('getDispCodeList res', res);
-        if (res?.data?.Item) {
-          this.setState({ dispCodesList: res.data.Item });
-        }
-      } catch (error) {
-        console.log('getDispCodesList error', error?.response?.data || error.message);
+        const res = await axios.get(url, {
+          headers: { 'x-api-key': apiKey } // header required by API GW
+          // (no Content-Type on GET)
+        });
+        if (res?.data?.Item) this.setState({ dispCodesList: res.data.Item });
+      } catch (err) {
+        console.log('getDispCodesList error', err?.response?.data || err.message);
       }
     };
+
 
 
     setDispCode = async (dispCodeName, dispCodeVal, instanceId, contactId) => {
